@@ -1,0 +1,57 @@
+{
+  "USER": {
+    "NOT_FOUND": "User not found",
+    "ALREADY_EXISTS": "User already exists",
+    "ALREADY_EXISTS_WITH_PHONE_NUMBER": "User with this phone number already exists",
+    "ALREADY_EXISTS_WITH_EMAIL": "User with this email already exists",
+    "DISABLED": "User account is disabled"
+  },
+  "ADMIN": {
+    "NOT_FOUND": "Admin not found",
+    "ALREADY_EXISTS": "Admin already exists"
+  },
+  "BARBER": {
+    "NOT_FOUND": "Barber not found",
+    "ALREADY_EXISTS": "Barber already exists",
+    "NOT_ACTIVE": "Barber is not active"
+  },
+  "CUSTOMER": {
+    "NOT_FOUND": "Customer not found",
+    "ALREADY_EXISTS": "Customer already exists"
+  },
+  "SERVICE": {
+    "NOT_FOUND": "Service not found",
+    "ALREADY_EXISTS": "Service already exists",
+    "NOT_ACTIVE": "Service is not active"
+  },
+  "SCHEDULE": {
+    "NOT_FOUND": "Schedule not found",
+    "ALREADY_EXISTS": "Schedule for this day already exists",
+    "INVALID_TIME": "Invalid time range"
+  },
+  "BOOKING": {
+    "NOT_FOUND": "Booking not found",
+    "ALREADY_EXISTS": "Booking already exists",
+    "TIME_SLOT_UNAVAILABLE": "The requested time slot is not available",
+    "DOUBLE_BOOKING": "This time slot is already booked",
+    "OUTSIDE_WORKING_HOURS": "Booking time is outside barber working hours",
+    "CANNOT_CANCEL": "This booking cannot be cancelled",
+    "BARBER_DOES_NOT_OFFER_SERVICE": "This barber does not offer the selected service"
+  },
+  "AUTH": {
+    "INVALID_CREDENTIALS": "Invalid credentials",
+    "INVALID_OTP": "Invalid or expired OTP",
+    "OTP_EXPIRED": "OTP has expired",
+    "MAX_OTP_ATTEMPTS": "Maximum OTP attempts exceeded",
+    "MAX_RESEND_ATTEMPTS": "Maximum resend attempts exceeded",
+    "INVALID_REFRESH_TOKEN": "Invalid refresh token",
+    "TOKEN_NOT_FOUND": "Token not found"
+  },
+  "ROLE": {
+    "NOT_FOUND": "Role not found",
+    "ALREADY_EXISTS": "Role already exists"
+  },
+  "TOKEN": {
+    "NOT_FOUND": "Token not found"
+  }
+}

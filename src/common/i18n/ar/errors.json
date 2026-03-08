@@ -1,0 +1,19 @@
+{
+  "USER": {
+    "NOT_FOUND": "المستخدم غير موجود",
+    "ALREADY_EXISTS": "المستخدم موجود بالفعل",
+    "ALREADY_EXISTS_WITH_PHONE_NUMBER": "يوجد مستخدم بهذا الرقم بالفعل",
+    "ALREADY_EXISTS_WITH_EMAIL": "يوجد مستخدم بهذا البريد الإلكتروني بالفعل",
+    "DISABLED": "حساب المستخدم معطل"
+  },
+  "AUTH": {
+    "INVALID_CREDENTIALS": "بيانات الدخول غير صحيحة",
+    "INVALID_OTP": "رمز التحقق غير صالح أو منتهي الصلاحية",
+    "OTP_EXPIRED": "رمز التحقق منتهي الصلاحية"
+  },
+  "BOOKING": {
+    "NOT_FOUND": "الحجز غير موجود",
+    "TIME_SLOT_UNAVAILABLE": "الموعد المطلوب غير متاح",
+    "DOUBLE_BOOKING": "هذا الموعد محجوز بالفعل"
+  }
+}

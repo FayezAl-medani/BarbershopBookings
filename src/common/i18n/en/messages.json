@@ -1,0 +1,34 @@
+{
+  "USER": {
+    "CREATED": "User created successfully",
+    "UPDATED": "User updated successfully",
+    "DELETED": "User deleted successfully"
+  },
+  "AUTH": {
+    "OTP_SENT": "OTP sent successfully",
+    "LOGIN_SUCCESS": "Login successful",
+    "LOGOUT_SUCCESS": "Logged out successfully",
+    "TOKEN_REFRESHED": "Token refreshed successfully"
+  },
+  "BOOKING": {
+    "CREATED": "Booking created successfully",
+    "UPDATED": "Booking updated successfully",
+    "CANCELLED": "Booking cancelled successfully",
+    "COMPLETED": "Booking completed successfully"
+  },
+  "BARBER": {
+    "CREATED": "Barber created successfully",
+    "UPDATED": "Barber updated successfully",
+    "DELETED": "Barber deleted successfully"
+  },
+  "SERVICE": {
+    "CREATED": "Service created successfully",
+    "UPDATED": "Service updated successfully",
+    "DELETED": "Service deleted successfully"
+  },
+  "SCHEDULE": {
+    "CREATED": "Schedule created successfully",
+    "UPDATED": "Schedule updated successfully",
+    "DELETED": "Schedule deleted successfully"
+  }
+}

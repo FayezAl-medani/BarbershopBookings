@@ -1,0 +1,250 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────────
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  DISABLED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum IdentifierType {
+  PHONE_NUMBER
+  EMAIL
+}
+
+enum UserCredentials {
+  PHONE_OTP
+  PASSWORD
+}
+
+// ─── Models ──────────────────────────────────────────────
+
+model User {
+  id          String     @id @default(uuid(7)) @db.Uuid
+  firstName   String?    @map("first_name")
+  lastName    String?    @map("last_name")
+  phoneNumber String     @unique @map("phone_number")
+  email       String?    @unique @map("email")
+  status      UserStatus @default(ACTIVE) @map("status")
+  lastLoginAt DateTime?  @map("last_login_at") @db.Timestamptz()
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  admin           Admin?
+  barber          Barber?
+  customer        Customer?
+  userCredentials UserCredential[]
+  tokens          Token[]
+  userRoles       UserRole[]
+
+  @@map("users")
+}
+
+model Admin {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  userId    String   @unique @map("user_id") @db.Uuid
+  email     String   @unique @map("email")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("admins")
+}
+
+model Barber {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  userId         String   @unique @map("user_id") @db.Uuid
+  bio            String?  @map("bio")
+  specialization String?  @map("specialization")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  barberServices BarberService[]
+  schedules      Schedule[]
+  bookings       Booking[]
+
+  @@map("barbers")
+}
+
+model Customer {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  userId    String   @unique @map("user_id") @db.Uuid
+  notes     String?  @map("notes")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  @@map("customers")
+}
+
+model Service {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  name        String   @map("name")
+  description String?  @map("description")
+  duration    Int      @map("duration") // duration in minutes
+  price       Decimal  @map("price") @db.Decimal(10, 2)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  barberServices BarberService[]
+  bookings       Booking[]
+
+  @@map("services")
+}
+
+model BarberService {
+  barberId  String   @map("barber_id") @db.Uuid
+  serviceId String   @map("service_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  barber  Barber  @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@id([barberId, serviceId])
+  @@map("barber_services")
+}
+
+model Schedule {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  barberId  String   @map("barber_id") @db.Uuid
+  dayOfWeek DayOfWeek @map("day_of_week")
+  startTime String   @map("start_time") // HH:mm format
+  endTime   String   @map("end_time")   // HH:mm format
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  barber Barber @relation(fields: [barberId], references: [id], onDelete: Cascade)
+
+  @@unique([barberId, dayOfWeek])
+  @@map("schedules")
+}
+
+model Booking {
+  id         String        @id @default(uuid(7)) @db.Uuid
+  customerId String        @map("customer_id") @db.Uuid
+  barberId   String        @map("barber_id") @db.Uuid
+  serviceId  String        @map("service_id") @db.Uuid
+  date       DateTime      @map("date") @db.Date
+  startTime  String        @map("start_time") // HH:mm format
+  endTime    String        @map("end_time")   // HH:mm format
+  status     BookingStatus @default(PENDING) @map("status")
+  notes      String?       @map("notes")
+  createdAt  DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt  DateTime      @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  barber   Barber   @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  service  Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@map("bookings")
+}
+
+model Role {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  name        String   @unique @map("name")
+  description String?  @map("description")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  userRoles UserRole[]
+
+  @@map("roles")
+}
+
+model UserRole {
+  userId    String   @map("user_id") @db.Uuid
+  roleId    String   @map("role_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+model UserCredential {
+  id         String          @id @default(uuid(7)) @db.Uuid
+  userId     String          @map("user_id") @db.Uuid
+  method     UserCredentials @map("method")
+  identifier String          @map("identifier")
+  secretHash String?         @map("secret_hash")
+  createdAt  DateTime        @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt  DateTime        @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_credentials")
+}
+
+model Token {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  accessToken  String   @map("access_token")
+  refreshToken String   @map("refresh_token")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("tokens")
+}
+
+model ActiveOtp {
+  id             String         @id @default(uuid(7)) @db.Uuid
+  identifier     String         @map("identifier")
+  identifierType IdentifierType @map("identifier_type")
+  hashedOtp      String         @map("hashed_otp")
+  attempts       Int            @default(0) @map("attempts")
+  resendAttempts Int            @default(0) @map("resend_attempts")
+  expiresAt      DateTime       @map("expires_at") @db.Timestamptz()
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@map("active_otps")
+}
