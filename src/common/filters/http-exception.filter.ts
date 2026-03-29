@@ -4,9 +4,9 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
-} from '@nestjs/common';
-import { Request, Response } from 'express';
-import { Prisma } from '@prisma/client';
+} from "@nestjs/common";
+import { Request, Response } from "express";
+import { Prisma } from "@prisma/client";
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -24,9 +24,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
     if (exception instanceof Prisma.PrismaClientKnownRequestError) {
       const prismaError = this.handlePrismaError(exception);
       const errorResponse = {
-        status: 'ERROR',
+        status: "ERROR",
         message: prismaError.message,
-        ...(process.env.NODE_ENV !== 'production' && {
+        ...(process.env.NODE_ENV !== "production" && {
           timestamp: new Date().toISOString(),
           path: request.url,
           method: request.method,
@@ -38,9 +38,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     if (exception instanceof Error) {
       const errorResponse = {
-        status: 'ERROR',
-        message: exception.message || 'Internal server error',
-        ...(process.env.NODE_ENV !== 'production' && {
+        status: "ERROR",
+        message: exception.message || "Internal server error",
+        ...(process.env.NODE_ENV !== "production" && {
           timestamp: new Date().toISOString(),
           path: request.url,
           method: request.method,
@@ -53,9 +53,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
 
     const errorResponse = {
-      status: 'ERROR',
-      message: 'Internal server error',
-      ...(process.env.NODE_ENV !== 'production' && {
+      status: "ERROR",
+      message: "Internal server error",
+      ...(process.env.NODE_ENV !== "production" && {
         timestamp: new Date().toISOString(),
         path: request.url,
         method: request.method,
@@ -71,60 +71,60 @@ export class AllExceptionsFilter implements ExceptionFilter {
     message: string;
   } {
     switch (exception.code) {
-      case 'P2002': {
+      case "P2002": {
         const target = exception.meta?.target as string[];
-        const field = target ? target.join(', ') : 'field';
+        const field = target ? target.join(", ") : "field";
         return {
           status: HttpStatus.CONFLICT,
           message: `${this.formatFieldName(field)} already exists`,
         };
       }
-      case 'P2003': {
+      case "P2003": {
         const field = exception.meta?.field_name as string;
         return {
           status: HttpStatus.BAD_REQUEST,
-          message: `Invalid reference: ${field || 'related record'} does not exist`,
+          message: `Invalid reference: ${field || "related record"} does not exist`,
         };
       }
-      case 'P2025': {
+      case "P2025": {
         return {
           status: HttpStatus.NOT_FOUND,
-          message: 'Record not found',
+          message: "Record not found",
         };
       }
-      case 'P2014': {
+      case "P2014": {
         return {
           status: HttpStatus.BAD_REQUEST,
-          message: 'Required relation is missing',
+          message: "Required relation is missing",
         };
       }
-      case 'P2011': {
+      case "P2011": {
         const field = exception.meta?.constraint as string;
         return {
           status: HttpStatus.BAD_REQUEST,
           message: `${this.formatFieldName(field)} is required`,
         };
       }
-      case 'P2016': {
+      case "P2016": {
         return {
           status: HttpStatus.BAD_REQUEST,
-          message: 'Invalid query parameters',
+          message: "Invalid query parameters",
         };
       }
       default: {
         return {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: 'Database error occurred',
+          message: "Database error occurred",
         };
       }
     }
   }
 
   private formatFieldName(field: string): string {
-    if (!field) return 'Field';
+    if (!field) return "Field";
     return field
-      .split('_')
+      .split("_")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
+      .join(" ");
   }
 }

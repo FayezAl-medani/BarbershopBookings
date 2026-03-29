@@ -1,5 +1,5 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { UserEntity } from '../../user/entities/user.entity.js';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { UserEntity } from "../../user/entities/user.entity.js";
 
 export class BarberEntity {
   @ApiProperty()
@@ -8,11 +8,17 @@ export class BarberEntity {
   @ApiProperty()
   userId: string;
 
+  @ApiProperty()
+  barbershopId: string;
+
   @ApiPropertyOptional()
   bio?: string | null;
 
   @ApiPropertyOptional()
   specialization?: string | null;
+
+  @ApiPropertyOptional()
+  commissionRate?: number | null;
 
   @ApiProperty()
   isActive: boolean;

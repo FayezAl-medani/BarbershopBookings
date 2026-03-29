@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
 export interface IPagingMeta {
   total: number;
@@ -12,32 +12,32 @@ export interface IPagingMeta {
 export class PagingMeta implements IPagingMeta {
   @ApiProperty({
     example: 100,
-    description: 'Total number of items across all pages',
+    description: "Total number of items across all pages",
   })
   total: number;
 
   @ApiProperty({
     example: 10,
-    description: 'Last page number',
+    description: "Last page number",
   })
   lastPage: number;
 
   @ApiProperty({
     example: 1,
-    description: 'Current page number',
+    description: "Current page number",
   })
   currentPage: number;
 
   @ApiProperty({
     example: 10,
-    description: 'Number of items per page',
+    description: "Number of items per page",
   })
   perPage: number;
 
   @ApiProperty({
     example: null,
     nullable: true,
-    description: 'Previous page number (null if on first page)',
+    description: "Previous page number (null if on first page)",
     required: false,
   })
   prev: number | null;
@@ -45,7 +45,7 @@ export class PagingMeta implements IPagingMeta {
   @ApiProperty({
     example: 2,
     nullable: true,
-    description: 'Next page number (null if on last page)',
+    description: "Next page number (null if on last page)",
     required: false,
   })
   next: number | null;

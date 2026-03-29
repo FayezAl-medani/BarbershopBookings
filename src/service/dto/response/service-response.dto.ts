@@ -1,8 +1,11 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class ServiceResponseDto {
   @ApiProperty()
   id: string;
+
+  @ApiProperty()
+  barbershopId: string;
 
   @ApiProperty()
   name: string;

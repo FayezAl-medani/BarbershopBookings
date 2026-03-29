@@ -1,16 +1,16 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { ResponseStatus } from '../enums/index.js';
+import { ApiProperty } from "@nestjs/swagger";
+import { ResponseStatus } from "../enums/index.js";
 
 export class DataResponseDto<T> {
   @ApiProperty({
     enum: ResponseStatus,
     example: ResponseStatus.SUCCESS,
-    description: 'Response status indicator',
+    description: "Response status indicator",
   })
   status: ResponseStatus;
 
   @ApiProperty({
-    description: 'The data payload',
+    description: "The data payload",
   })
   data: T;
 
@@ -29,7 +29,7 @@ export function createDataResponse<T>(dataType: new (...args: any[]) => T) {
     declare data: T;
   }
 
-  Object.defineProperty(DataResponse, 'name', {
+  Object.defineProperty(DataResponse, "name", {
     value: `${dataType.name}Data`,
     writable: false,
   });
@@ -41,12 +41,12 @@ export class DataArrayResponseDto<T> {
   @ApiProperty({
     enum: ResponseStatus,
     example: ResponseStatus.SUCCESS,
-    description: 'Response status indicator',
+    description: "Response status indicator",
   })
   status: ResponseStatus;
 
   @ApiProperty({
-    description: 'The data payload',
+    description: "The data payload",
   })
   data: T[];
 
@@ -72,7 +72,7 @@ export function createDataArrayResponse<T>(
     declare data: T[];
   }
 
-  Object.defineProperty(DataArrayResponse, 'name', {
+  Object.defineProperty(DataArrayResponse, "name", {
     value: `${dataType.name}ArrayData`,
     writable: false,
   });

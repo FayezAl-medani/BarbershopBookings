@@ -1,6 +1,6 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
-import { ActiveOtpRepository } from '../active-otp.repository.js';
+import { Injectable, OnModuleInit } from "@nestjs/common";
+import { Cron, CronExpression } from "@nestjs/schedule";
+import { ActiveOtpRepository } from "../active-otp.repository.js";
 
 @Injectable()
 export class ActiveOtpCronJobService implements OnModuleInit {

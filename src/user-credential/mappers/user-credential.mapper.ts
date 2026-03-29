@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { UserCredential } from '@prisma/client';
-import { UserCredentialEntity } from '../entities/user-credential.entity.js';
+import { Injectable } from "@nestjs/common";
+import { UserCredential } from "@prisma/client";
+import { UserCredentialEntity } from "../entities/user-credential.entity.js";
 
 @Injectable()
 export class UserCredentialMapper {

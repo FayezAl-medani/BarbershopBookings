@@ -10,35 +10,49 @@ import {
   Inject,
   HttpCode,
   HttpStatus,
-} from '@nestjs/common';
+  ForbiddenException,
+} from "@nestjs/common";
 import {
   ApiTags,
   ApiBearerAuth,
   ApiOperation,
   ApiInternalServerErrorResponse,
-} from '@nestjs/swagger';
-import { BARBER_SERVICE } from './barber.service.interface.js';
-import type { IBarberService } from './barber.service.interface.js';
-import { BarberCreateDto } from './dto/request/barber-create.dto.js';
-import { BarberFilterDto } from './dto/request/barber-filter.dto.js';
-import { BarberPatchDto } from './dto/request/barber-patch.dto.js';
-import { BarberResponseDto } from './dto/response/barber-response.dto.js';
-import { PaginationParams } from '../common/dto/pagination-params.dto.js';
-import { DataResponseDto } from '../common/dto/data-response.dto.js';
-import { PagingDataResponseDto } from '../common/dto/paging-data-response.dto.js';
-import { ErrorResponseDto, MessageResponseDto } from '../common/dto/status.dto.js';
-import { SortingParams, SortingParam } from '../common/decorators/sorting-params.decorator.js';
-import { ApiSortingQuery } from '../common/decorators/sorting-params-swagger.decorator.js';
-import { ApiDataResponse, ApiPaginatedResponse, ApiCreatedDataResponse } from '../common/decorators/response.decorator.js';
-import { Roles } from '../common/decorators/roles.decorator.js';
-import { Public } from '../common/decorators/public.decorator.js';
-import { RoleName } from '../common/enums/role-name.enum.js';
-import { BarberMapper } from './mappers/barber.mapper.js';
+} from "@nestjs/swagger";
+import { BARBER_SERVICE } from "./barber.service.interface.js";
+import type { IBarberService } from "./barber.service.interface.js";
+import { BarberCreateDto } from "./dto/request/barber-create.dto.js";
+import { BarberFilterDto } from "./dto/request/barber-filter.dto.js";
+import { BarberPatchDto } from "./dto/request/barber-patch.dto.js";
+import { BarberResponseDto } from "./dto/response/barber-response.dto.js";
+import { PaginationParams } from "../common/dto/pagination-params.dto.js";
+import { DataResponseDto } from "../common/dto/data-response.dto.js";
+import { PagingDataResponseDto } from "../common/dto/paging-data-response.dto.js";
+import {
+  ErrorResponseDto,
+  MessageResponseDto,
+} from "../common/dto/status.dto.js";
+import {
+  SortingParams,
+  SortingParam,
+} from "../common/decorators/sorting-params.decorator.js";
+import { ApiSortingQuery } from "../common/decorators/sorting-params-swagger.decorator.js";
+import {
+  ApiDataResponse,
+  ApiPaginatedResponse,
+  ApiCreatedDataResponse,
+  ApiMessageResponse,
+} from "../common/decorators/response.decorator.js";
+import { Roles } from "../common/decorators/roles.decorator.js";
+import { Public } from "../common/decorators/public.decorator.js";
+import { CurrentUser } from "../common/decorators/current-user.decorator.js";
+import { RoleName } from "../common/enums/role-name.enum.js";
+import { JwtPayloadWithAuth } from "../common/entities/index.js";
+import { BarberMapper } from "./mappers/barber.mapper.js";
 
 @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
-@ApiBearerAuth('access-token')
-@ApiTags('Barber')
-@Controller('barber')
+@ApiBearerAuth("access-token")
+@ApiTags("Barber")
+@Controller("barber")
 export class BarberController {
   constructor(
     @Inject(BARBER_SERVICE)
@@ -46,60 +60,96 @@ export class BarberController {
     private readonly barberMapper: BarberMapper,
   ) {}
 
+  /** Verify that the barber belongs to the owner's barbershop */
+  private async assertOwnership(
+    barberId: string,
+    user: JwtPayloadWithAuth,
+  ): Promise<void> {
+    if (user.loggedInAs !== RoleName.BARBERSHOP_OWNER) return;
+    const barber = await this.barberService.getById(barberId);
+    if (barber.barbershopId !== user.barbershopId) {
+      throw new ForbiddenException(
+        "You can only manage barbers in your own barbershop",
+      );
+    }
+  }
+
   @Get()
   @Public()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get all barbers with pagination' })
+  @ApiOperation({ summary: "Get all barbers with pagination" })
   @ApiPaginatedResponse(BarberResponseDto)
-  @ApiSortingQuery(['createdAt', 'specialization'])
+  @ApiSortingQuery(["createdAt", "specialization"])
   async findAll(
     @Query() filter: BarberFilterDto,
     @Query() pagingArgs: PaginationParams,
-    @SortingParams(['createdAt', 'specialization']) sort: SortingParam | null,
+    @SortingParams(["createdAt", "specialization"]) sort: SortingParam | null,
   ): Promise<PagingDataResponseDto<BarberResponseDto>> {
-    const result = await this.barberService.findAllPaging(filter, pagingArgs, sort);
-    const mappedData = result.data.map((entity) => this.barberMapper.entityToResponseDto(entity));
+    const result = await this.barberService.findAllPaging(
+      filter,
+      pagingArgs,
+      sort,
+    );
+    const mappedData = result.data.map((entity) =>
+      this.barberMapper.entityToResponseDto(entity),
+    );
     return new PagingDataResponseDto(mappedData, result.meta);
   }
 
-  @Get(':id')
+  @Get(":id")
   @Public()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get barber by ID' })
+  @ApiOperation({ summary: "Get barber by ID" })
   @ApiDataResponse(BarberResponseDto)
-  async findOne(@Param('id') id: string): Promise<DataResponseDto<BarberResponseDto>> {
+  async findOne(
+    @Param("id") id: string,
+  ): Promise<DataResponseDto<BarberResponseDto>> {
     const barber = await this.barberService.getById(id);
     return new DataResponseDto(this.barberMapper.entityToResponseDto(barber));
   }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @Roles(RoleName.ADMIN, RoleName.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Create a new barber' })
+  @Roles(RoleName.ADMIN, RoleName.SUPER_ADMIN, RoleName.BARBERSHOP_OWNER)
+  @ApiOperation({ summary: "Create a new barber" })
   @ApiCreatedDataResponse(BarberResponseDto)
-  async create(@Body() payload: BarberCreateDto): Promise<DataResponseDto<BarberResponseDto>> {
+  async create(
+    @Body() payload: BarberCreateDto,
+    @CurrentUser() user: JwtPayloadWithAuth,
+  ): Promise<DataResponseDto<BarberResponseDto>> {
+    // Owners can only create barbers in their own barbershop
+    if (user.loggedInAs === RoleName.BARBERSHOP_OWNER) {
+      payload.barbershopId = user.barbershopId!;
+    }
     const barber = await this.barberService.create(payload);
     return new DataResponseDto(this.barberMapper.entityToResponseDto(barber));
   }
 
-  @Patch(':id')
+  @Patch(":id")
   @HttpCode(HttpStatus.OK)
-  @Roles(RoleName.ADMIN, RoleName.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Update a barber' })
+  @Roles(RoleName.ADMIN, RoleName.SUPER_ADMIN, RoleName.BARBERSHOP_OWNER)
+  @ApiOperation({ summary: "Update a barber" })
   @ApiDataResponse(BarberResponseDto)
   async update(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @Body() payload: BarberPatchDto,
+    @CurrentUser() user: JwtPayloadWithAuth,
   ): Promise<DataResponseDto<BarberResponseDto>> {
+    await this.assertOwnership(id, user);
     const barber = await this.barberService.update(id, payload);
     return new DataResponseDto(this.barberMapper.entityToResponseDto(barber));
   }
 
-  @Delete(':id')
+  @Delete(":id")
   @HttpCode(HttpStatus.OK)
-  @Roles(RoleName.ADMIN, RoleName.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Delete a barber' })
-  async remove(@Param('id') id: string): Promise<MessageResponseDto> {
+  @Roles(RoleName.ADMIN, RoleName.SUPER_ADMIN, RoleName.BARBERSHOP_OWNER)
+  @ApiMessageResponse()
+  @ApiOperation({ summary: "Delete a barber" })
+  async remove(
+    @Param("id") id: string,
+    @CurrentUser() user: JwtPayloadWithAuth,
+  ): Promise<MessageResponseDto> {
+    await this.assertOwnership(id, user);
     return this.barberService.remove(id);
   }
 }

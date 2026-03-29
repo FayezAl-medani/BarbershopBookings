@@ -1,1 +1,1 @@
-export * from './jwt-decoded.entity.js';
+export * from "./jwt-decoded.entity.js";

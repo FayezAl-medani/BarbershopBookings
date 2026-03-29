@@ -1,9 +1,9 @@
-import { Type, applyDecorators } from '@nestjs/common';
+import { Type, applyDecorators } from "@nestjs/common";
 import {
   ApiCreatedResponse,
   ApiExtraModels,
   ApiOkResponse,
-} from '@nestjs/swagger';
+} from "@nestjs/swagger";
 import {
   DataArrayResponseDto,
   DataResponseDto,
@@ -12,7 +12,8 @@ import {
   createDataArrayResponse,
   createDataResponse,
   createPagingDataResponse,
-} from '../dto/index.js';
+} from "../dto/index.js";
+import { MessageResponseDto } from "../dto/status.dto.js";
 
 export const ApiDataResponse = <TModel extends Type<any>>(model: TModel) => {
   const DataResponse = createDataResponse(model);
@@ -49,6 +50,10 @@ export const ApiCreatedDataResponse = <TModel extends Type<any>>(
       type: DataResponse,
     }),
   );
+};
+
+export const ApiMessageResponse = () => {
+  return applyDecorators(ApiOkResponse({ type: MessageResponseDto }));
 };
 
 export const ApiDataArrayResponse = <TModel extends Type<any>>(

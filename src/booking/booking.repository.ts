@@ -1,13 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { Booking, Prisma } from '@prisma/client';
-import { PrismaService } from '../common/prisma/prisma.service.js';
-import { PrismaTransactionContext } from '../common/prisma/prisma-transaction-context.service.js';
-import { paginator } from '../common/prisma/paginator.js';
-import { BookingFilterDto } from './dto/request/booking-filter.dto.js';
-import { BookingPatchDto } from './dto/request/booking-patch.dto.js';
-import { PaginationParams } from '../common/dto/pagination-params.dto.js';
-import { IPaginatedResult } from '../common/dto/paging-data-response.dto.js';
-import { SortingParam } from '../common/decorators/sorting-params.decorator.js';
+import { Injectable } from "@nestjs/common";
+import { Booking, Prisma } from "@prisma/client";
+import { PrismaService } from "../common/prisma/prisma.service.js";
+import { PrismaTransactionContext } from "../common/prisma/prisma-transaction-context.service.js";
+import { paginator } from "../common/prisma/paginator.js";
+import { BookingFilterDto } from "./dto/request/booking-filter.dto.js";
+import { BookingPatchDto } from "./dto/request/booking-patch.dto.js";
+import { PaginationParams } from "../common/dto/pagination-params.dto.js";
+import { IPaginatedResult } from "../common/dto/paging-data-response.dto.js";
+import { SortingParam } from "../common/decorators/sorting-params.decorator.js";
 
 const paginate = paginator({ perPage: 10 });
 
@@ -46,16 +46,27 @@ export class BookingRepository {
 
     const orderBy = sort
       ? { [sort.property]: sort.direction }
-      : { createdAt: 'desc' as const };
+      : { createdAt: "desc" as const };
 
     return paginate(
       this.txContext.getClient().booking,
-      { where, orderBy },
+      {
+        where,
+        orderBy,
+        include: {
+          customer: { include: { user: true } },
+          barber: { include: { user: true } },
+          service: true,
+        },
+      },
       pagingArgs,
     );
   }
 
-  async updateById(id: string, payload: BookingPatchDto): Promise<Booking> {
+  async updateById(
+    id: string,
+    payload: BookingPatchDto | Prisma.BookingUncheckedUpdateInput,
+  ): Promise<Booking> {
     const client = this.txContext.getClient();
     return await client.booking.update({
       where: { id },
@@ -84,12 +95,9 @@ export class BookingRepository {
     const where: Prisma.BookingWhereInput = {
       barberId,
       date,
-      status: { notIn: ['CANCELLED', 'NO_SHOW'] },
+      status: { notIn: ["CANCELLED", "NO_SHOW"] },
       // Two time ranges overlap if: start1 < end2 AND start2 < end1
-      AND: [
-        { startTime: { lt: endTime } },
-        { endTime: { gt: startTime } },
-      ],
+      AND: [{ startTime: { lt: endTime } }, { endTime: { gt: startTime } }],
       ...(excludeBookingId && { id: { not: excludeBookingId } }),
     };
 
@@ -100,15 +108,18 @@ export class BookingRepository {
    * Find all non-cancelled bookings for a barber on a given date.
    * Used for availability calculation.
    */
-  async findBarberBookingsForDate(barberId: string, date: Date): Promise<Booking[]> {
+  async findBarberBookingsForDate(
+    barberId: string,
+    date: Date,
+  ): Promise<Booking[]> {
     const client = this.txContext.getClient();
     return await client.booking.findMany({
       where: {
         barberId,
         date,
-        status: { notIn: ['CANCELLED', 'NO_SHOW'] },
+        status: { notIn: ["CANCELLED", "NO_SHOW"] },
       },
-      orderBy: { startTime: 'asc' },
+      orderBy: { startTime: "asc" },
     });
   }
 

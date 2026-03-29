@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { User } from '@prisma/client';
-import { UserEntity } from '../entities/user.entity.js';
-import { UserResponseDto } from '../dto/response/user-response.dto.js';
+import { Injectable } from "@nestjs/common";
+import { User } from "@prisma/client";
+import { UserEntity } from "../entities/user.entity.js";
+import { UserResponseDto } from "../dto/response/user-response.dto.js";
 
 @Injectable()
 export class UserMapper {

@@ -1,5 +1,5 @@
-import { IsDate, IsEnum, IsNumber, IsString } from 'class-validator';
-import { IdentifierType } from '../../enums/identifier-type.enum.js';
+import { IsDate, IsEnum, IsNumber, IsString } from "class-validator";
+import { IdentifierType } from "../../enums/identifier-type.enum.js";
 
 export class ActiveOtpCreateDto {
   @IsString()

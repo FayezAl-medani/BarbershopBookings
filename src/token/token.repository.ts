@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { Token } from '@prisma/client';
-import { PrismaService } from '../common/prisma/prisma.service.js';
-import { PrismaTransactionContext } from '../common/prisma/prisma-transaction-context.service.js';
-import { TokenCreateDto } from './dto/request/token-create.dto.js';
+import { Injectable } from "@nestjs/common";
+import { Token } from "@prisma/client";
+import { PrismaService } from "../common/prisma/prisma.service.js";
+import { PrismaTransactionContext } from "../common/prisma/prisma-transaction-context.service.js";
+import { TokenCreateDto } from "./dto/request/token-create.dto.js";
 
 @Injectable()
 export class TokenRepository {
@@ -36,10 +36,13 @@ export class TokenRepository {
     return await client.token.update({ where: { id }, data });
   }
 
-  async updateByRefreshToken(refreshToken: string, data: Partial<TokenCreateDto>): Promise<Token> {
+  async updateByRefreshToken(
+    refreshToken: string,
+    data: Partial<TokenCreateDto>,
+  ): Promise<Token> {
     const client = this.txContext.getClient();
     const token = await client.token.findFirst({ where: { refreshToken } });
-    if (!token) throw new Error('Token not found');
+    if (!token) throw new Error("Token not found");
     return await client.token.update({ where: { id: token.id }, data });
   }
 

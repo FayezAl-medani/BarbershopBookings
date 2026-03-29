@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { Schedule } from '@prisma/client';
-import { ScheduleEntity } from '../entities/schedule.entity.js';
-import { ScheduleResponseDto } from '../dto/response/schedule-response.dto.js';
+import { Injectable } from "@nestjs/common";
+import { Schedule } from "@prisma/client";
+import { ScheduleEntity } from "../entities/schedule.entity.js";
+import { ScheduleResponseDto } from "../dto/response/schedule-response.dto.js";
 
 @Injectable()
 export class ScheduleMapper {

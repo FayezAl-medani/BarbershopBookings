@@ -3,10 +3,10 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
-} from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { ROLES_KEY } from '../decorators/roles.decorator.js';
-import { JwtPayloadWithAuth } from '../entities/index.js';
+} from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
+import { ROLES_KEY } from "../decorators/roles.decorator.js";
+import { JwtPayloadWithAuth } from "../entities/index.js";
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -26,14 +26,14 @@ export class RolesGuard implements CanActivate {
     const user: JwtPayloadWithAuth = request.user;
 
     if (!user || !user.roles) {
-      throw new ForbiddenException('User roles not found');
+      throw new ForbiddenException("User roles not found");
     }
 
     const hasRole = requiredRoles.some((role) => user.roles.includes(role));
 
     if (!hasRole) {
       throw new ForbiddenException(
-        `User does not have required role(s): ${requiredRoles.join(', ')}`,
+        `User does not have required role(s): ${requiredRoles.join(", ")}`,
       );
     }
 

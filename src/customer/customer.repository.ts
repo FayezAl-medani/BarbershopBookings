@@ -1,13 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { Customer, Prisma } from '@prisma/client';
-import { PrismaService } from '../common/prisma/prisma.service.js';
-import { PrismaTransactionContext } from '../common/prisma/prisma-transaction-context.service.js';
-import { paginator } from '../common/prisma/paginator.js';
-import { CustomerCreateDto } from './dto/request/customer-create.dto.js';
-import { CustomerFilterDto } from './dto/request/customer-filter.dto.js';
-import { CustomerPatchDto } from './dto/request/customer-patch.dto.js';
-import { PaginationParams } from '../common/dto/pagination-params.dto.js';
-import { IPaginatedResult } from '../common/dto/paging-data-response.dto.js';
+import { Injectable } from "@nestjs/common";
+import { Customer, Prisma } from "@prisma/client";
+import { PrismaService } from "../common/prisma/prisma.service.js";
+import { PrismaTransactionContext } from "../common/prisma/prisma-transaction-context.service.js";
+import { paginator } from "../common/prisma/paginator.js";
+import { CustomerCreateDto } from "./dto/request/customer-create.dto.js";
+import { CustomerFilterDto } from "./dto/request/customer-filter.dto.js";
+import { CustomerPatchDto } from "./dto/request/customer-patch.dto.js";
+import { PaginationParams } from "../common/dto/pagination-params.dto.js";
+import { IPaginatedResult } from "../common/dto/paging-data-response.dto.js";
 
 const paginate = paginator({ perPage: 10 });
 
@@ -55,7 +55,11 @@ export class CustomerRepository {
 
     return paginate(
       this.txContext.getClient().customer,
-      { where, orderBy: { createdAt: 'desc' as const }, include: { user: true } },
+      {
+        where,
+        orderBy: { createdAt: "desc" as const },
+        include: { user: true },
+      },
       pagingArgs,
     );
   }

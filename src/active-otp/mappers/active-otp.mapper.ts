@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { ActiveOtp } from '@prisma/client';
-import { ActiveOtpEntity } from '../entities/active-otp.entity.js';
+import { Injectable } from "@nestjs/common";
+import { ActiveOtp } from "@prisma/client";
+import { ActiveOtpEntity } from "../entities/active-otp.entity.js";
 
 @Injectable()
 export class ActiveOtpMapper {

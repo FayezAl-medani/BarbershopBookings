@@ -1,10 +1,10 @@
-import { applyDecorators } from '@nestjs/common';
-import { ApiQuery } from '@nestjs/swagger';
+import { applyDecorators } from "@nestjs/common";
+import { ApiQuery } from "@nestjs/swagger";
 
 export const ApiSortingQuery = (params: string[]) => {
   return applyDecorators(
     ApiQuery({
-      name: 'sort',
+      name: "sort",
       required: false,
       explode: false,
       type: String,

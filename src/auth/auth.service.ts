@@ -2,33 +2,39 @@ import {
   BadRequestException,
   Inject,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
-} from '@nestjs/common';
-import { I18nService } from 'nestjs-i18n';
-import * as bcrypt from 'bcryptjs';
-import { JwtServiceUtils, AccessTokenPayload, RefreshTokenPayload } from '../common/jwt/jwt.service.js';
-import { UserRepository } from '../user/user.repository.js';
-import { UserIncludePreset } from '../user/enums/user-include-preset.enum.js';
-import { TOKEN_SERVICE } from '../token/token.service.interface.js';
-import type { ITokenService } from '../token/token.service.interface.js';
-import { ACTIVE_OTP_SERVICE } from '../active-otp/active-otp.service.interface.js';
-import type { IActiveOtpService } from '../active-otp/active-otp.service.interface.js';
-import { USER_CREDENTIAL_SERVICE } from '../user-credential/user-credential.service.interface.js';
-import type { IUserCredentialService } from '../user-credential/user-credential.service.interface.js';
-import { USER_ROLE_SERVICE } from '../user-role/user-role.service.interface.js';
-import type { IUserRoleService } from '../user-role/user-role.service.interface.js';
-import { CUSTOMER_SERVICE } from '../customer/customer.service.interface.js';
-import type { ICustomerService } from '../customer/customer.service.interface.js';
-import { AdminRepository } from '../admin/admin.repository.js';
-import { BarberRepository } from '../barber/barber.repository.js';
-import { RoleName } from '../common/enums/role-name.enum.js';
-import { AuthResponseDto } from './dto/response/auth-response.dto.js';
-import { OtpSentResponseDto } from './dto/response/otp-sent-response.dto.js';
-import { IdentifierType } from '../active-otp/enums/identifier-type.enum.js';
-import { PrismaTransactionContext } from '../common/prisma/prisma-transaction-context.service.js';
-import { ROLE_SERVICE } from '../role/role.service.interface.js';
-import type { IRoleService } from '../role/role.service.interface.js';
+} from "@nestjs/common";
+import { I18nService } from "nestjs-i18n";
+import * as bcrypt from "bcryptjs";
+import {
+  JwtServiceUtils,
+  AccessTokenPayload,
+  RefreshTokenPayload,
+} from "../common/jwt/jwt.service.js";
+import { UserRepository } from "../user/user.repository.js";
+import { UserIncludePreset } from "../user/enums/user-include-preset.enum.js";
+import { TOKEN_SERVICE } from "../token/token.service.interface.js";
+import type { ITokenService } from "../token/token.service.interface.js";
+import { ACTIVE_OTP_SERVICE } from "../active-otp/active-otp.service.interface.js";
+import type { IActiveOtpService } from "../active-otp/active-otp.service.interface.js";
+import { USER_CREDENTIAL_SERVICE } from "../user-credential/user-credential.service.interface.js";
+import type { IUserCredentialService } from "../user-credential/user-credential.service.interface.js";
+import { USER_ROLE_SERVICE } from "../user-role/user-role.service.interface.js";
+import type { IUserRoleService } from "../user-role/user-role.service.interface.js";
+import { CUSTOMER_SERVICE } from "../customer/customer.service.interface.js";
+import type { ICustomerService } from "../customer/customer.service.interface.js";
+import { AdminRepository } from "../admin/admin.repository.js";
+import { BarberRepository } from "../barber/barber.repository.js";
+import { RoleName } from "../common/enums/role-name.enum.js";
+import { AuthResponseDto } from "./dto/response/auth-response.dto.js";
+import { OtpSentResponseDto } from "./dto/response/otp-sent-response.dto.js";
+import { IdentifierType } from "../active-otp/enums/identifier-type.enum.js";
+import { PrismaTransactionContext } from "../common/prisma/prisma-transaction-context.service.js";
+import { ROLE_SERVICE } from "../role/role.service.interface.js";
+import type { IRoleService } from "../role/role.service.interface.js";
+import { PrismaService } from "../common/prisma/prisma.service.js";
+import { SMS_SERVICE } from "../common/sms/sms.service.interface.js";
+import type { ISmsService } from "../common/sms/sms.service.interface.js";
 
 const OTP_EXPIRY_MINUTES = 3;
 const MAX_OTP_ATTEMPTS = 5;
@@ -42,41 +48,57 @@ export class AuthService {
     private readonly barberRepository: BarberRepository,
     private readonly i18nService: I18nService,
     private readonly txContext: PrismaTransactionContext,
+    private readonly prisma: PrismaService,
     @Inject(TOKEN_SERVICE) private readonly tokenService: ITokenService,
-    @Inject(ACTIVE_OTP_SERVICE) private readonly activeOtpService: IActiveOtpService,
-    @Inject(USER_CREDENTIAL_SERVICE) private readonly userCredentialService: IUserCredentialService,
-    @Inject(USER_ROLE_SERVICE) private readonly userRoleService: IUserRoleService,
-    @Inject(CUSTOMER_SERVICE) private readonly customerService: ICustomerService,
+    @Inject(ACTIVE_OTP_SERVICE)
+    private readonly activeOtpService: IActiveOtpService,
+    @Inject(USER_CREDENTIAL_SERVICE)
+    private readonly userCredentialService: IUserCredentialService,
+    @Inject(USER_ROLE_SERVICE)
+    private readonly userRoleService: IUserRoleService,
+    @Inject(CUSTOMER_SERVICE)
+    private readonly customerService: ICustomerService,
     @Inject(ROLE_SERVICE) private readonly roleService: IRoleService,
+    @Inject(SMS_SERVICE) private readonly smsService: ISmsService,
   ) {}
 
   async adminLogin(email: string, password: string): Promise<AuthResponseDto> {
     const admin = await this.adminRepository.findByEmail(email);
     if (!admin) {
       throw new UnauthorizedException(
-        this.i18nService.translate('errors.AUTH.INVALID_CREDENTIALS'),
+        this.i18nService.translate("errors.AUTH.INVALID_CREDENTIALS"),
       );
     }
 
-    const credential = await this.userCredentialService.getByUserIdAndMethod(admin.userId, 'PASSWORD');
+    const credential = await this.userCredentialService.getByUserIdAndMethod(
+      admin.userId,
+      "PASSWORD",
+    );
     if (!credential || !credential.secretHash) {
       throw new UnauthorizedException(
-        this.i18nService.translate('errors.AUTH.INVALID_CREDENTIALS'),
+        this.i18nService.translate("errors.AUTH.INVALID_CREDENTIALS"),
       );
     }
 
-    const isValidPassword = await bcrypt.compare(password, credential.secretHash);
+    const isValidPassword = await bcrypt.compare(
+      password,
+      credential.secretHash,
+    );
     if (!isValidPassword) {
       throw new UnauthorizedException(
-        this.i18nService.translate('errors.AUTH.INVALID_CREDENTIALS'),
+        this.i18nService.translate("errors.AUTH.INVALID_CREDENTIALS"),
       );
     }
 
     // Update last login
-    await this.userRepository.updateById(admin.userId, { lastLoginAt: new Date() } as any);
+    await this.userRepository.updateById(admin.userId, {
+      lastLoginAt: new Date(),
+    } as any);
 
     const userRoles = await this.userRoleService.findAllByUserId(admin.userId);
-    const roles = userRoles.map((ur) => ur.role?.name).filter(Boolean) as string[];
+    const roles = userRoles
+      .map((ur) => ur.role?.name)
+      .filter(Boolean) as string[];
 
     const accessPayload: AccessTokenPayload = {
       userId: admin.userId,
@@ -90,10 +112,91 @@ export class AuthService {
       loggedInAs: RoleName.ADMIN,
     };
 
-    const tokens = await this.jwtServiceUtils.generateTokenPair(accessPayload, refreshPayload);
+    const tokens = await this.jwtServiceUtils.generateTokenPair(
+      accessPayload,
+      refreshPayload,
+    );
 
+    await this.tokenService.deleteAllByUserId(admin.userId);
     await this.tokenService.create({
       userId: admin.userId,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    });
+
+    return tokens;
+  }
+
+  async ownerLogin(email: string, password: string): Promise<AuthResponseDto> {
+    // Find user by email
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      throw new UnauthorizedException(
+        this.i18nService.translate("errors.AUTH.INVALID_CREDENTIALS"),
+      );
+    }
+
+    const credential = await this.userCredentialService.getByUserIdAndMethod(
+      user.id,
+      "PASSWORD",
+    );
+    if (!credential || !credential.secretHash) {
+      throw new UnauthorizedException(
+        this.i18nService.translate("errors.AUTH.INVALID_CREDENTIALS"),
+      );
+    }
+
+    const isValidPassword = await bcrypt.compare(
+      password,
+      credential.secretHash,
+    );
+    if (!isValidPassword) {
+      throw new UnauthorizedException(
+        this.i18nService.translate("errors.AUTH.INVALID_CREDENTIALS"),
+      );
+    }
+
+    // Verify they have BARBERSHOP_OWNER role
+    const userRoles = await this.userRoleService.findAllByUserId(user.id);
+    const roles = userRoles
+      .map((ur) => ur.role?.name)
+      .filter(Boolean) as string[];
+
+    if (!roles.includes(RoleName.BARBERSHOP_OWNER)) {
+      throw new UnauthorizedException(
+        this.i18nService.translate("errors.AUTH.INVALID_CREDENTIALS"),
+      );
+    }
+
+    // Get their barbershop
+    const barbershop = await this.prisma.barbershop.findFirst({
+      where: { ownerId: user.id },
+    });
+
+    await this.userRepository.updateById(user.id, {
+      lastLoginAt: new Date(),
+    } as any);
+
+    const accessPayload: AccessTokenPayload = {
+      userId: user.id,
+      barbershopId: barbershop?.id,
+      loggedInAs: RoleName.BARBERSHOP_OWNER,
+      roles,
+    };
+
+    const refreshPayload: RefreshTokenPayload = {
+      userId: user.id,
+      loggedInAs: RoleName.BARBERSHOP_OWNER,
+    };
+
+    const tokens = await this.jwtServiceUtils.generateTokenPair(
+      accessPayload,
+      refreshPayload,
+    );
+
+    await this.tokenService.deleteAllByUserId(user.id);
+    await this.tokenService.create({
+      userId: user.id,
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
     });
@@ -124,34 +227,37 @@ export class AuthService {
       expiresAt,
     });
 
-    // In production, send OTP via SMS. For development, log it.
-    console.log(`[DEV] OTP for ${phoneNumber}: ${otp}`);
+    // Send OTP via configured SMS provider (console in dev, Twilio in prod)
+    await this.smsService.sendOtp(phoneNumber, otp);
 
     return {
-      message: this.i18nService.translate('messages.AUTH.OTP_SENT'),
+      message: this.i18nService.translate("messages.AUTH.OTP_SENT"),
       expiresInSeconds: OTP_EXPIRY_MINUTES * 60,
     };
   }
 
-  async verifyOtpAndLogin(phoneNumber: string, otp: string): Promise<AuthResponseDto> {
+  async verifyOtpAndLogin(
+    phoneNumber: string,
+    otp: string,
+  ): Promise<AuthResponseDto> {
     const activeOtp = await this.activeOtpService.getByIdentifier(phoneNumber);
     if (!activeOtp) {
       throw new BadRequestException(
-        this.i18nService.translate('errors.AUTH.INVALID_OTP'),
+        this.i18nService.translate("errors.AUTH.INVALID_OTP"),
       );
     }
 
     if (new Date() > activeOtp.expiresAt) {
       await this.activeOtpService.deleteById(activeOtp.id);
       throw new BadRequestException(
-        this.i18nService.translate('errors.AUTH.OTP_EXPIRED'),
+        this.i18nService.translate("errors.AUTH.OTP_EXPIRED"),
       );
     }
 
     if (activeOtp.attempts >= MAX_OTP_ATTEMPTS) {
       await this.activeOtpService.deleteById(activeOtp.id);
       throw new BadRequestException(
-        this.i18nService.translate('errors.AUTH.MAX_OTP_ATTEMPTS'),
+        this.i18nService.translate("errors.AUTH.MAX_OTP_ATTEMPTS"),
       );
     }
 
@@ -161,7 +267,7 @@ export class AuthService {
         attempts: activeOtp.attempts + 1,
       } as any);
       throw new BadRequestException(
-        this.i18nService.translate('errors.AUTH.INVALID_OTP'),
+        this.i18nService.translate("errors.AUTH.INVALID_OTP"),
       );
     }
 
@@ -177,10 +283,12 @@ export class AuthService {
       const result = await this.txContext.runInTransaction(async () => {
         const newUser = await this.userRepository.create({
           phoneNumber,
-          status: 'ACTIVE' as any,
+          status: "ACTIVE" as any,
         });
 
-        const customerRole = await this.roleService.getByName(RoleName.CUSTOMER);
+        const customerRole = await this.roleService.getByName(
+          RoleName.CUSTOMER,
+        );
         await this.userRoleService.create({
           userId: newUser.id,
           roleId: customerRole.id,
@@ -197,8 +305,10 @@ export class AuthService {
       customerId = result.customerId;
     } else {
       // Update last login
-      await this.userRepository.updateById(user.id, { lastLoginAt: new Date() } as any);
-      const existingCustomer = await this.barberRepository.findByUserId(user.id).catch(() => null);
+      await this.userRepository.updateById(user.id, {
+        lastLoginAt: new Date(),
+      } as any);
+      await this.barberRepository.findByUserId(user.id).catch(() => null);
       // Try to find customer profile
       try {
         const customer = await this.customerService.getByUserId(user.id);
@@ -209,7 +319,9 @@ export class AuthService {
     }
 
     const userRoles = await this.userRoleService.findAllByUserId(user.id);
-    const roles = userRoles.map((ur) => ur.role?.name).filter(Boolean) as string[];
+    const roles = userRoles
+      .map((ur) => ur.role?.name)
+      .filter(Boolean) as string[];
 
     const accessPayload: AccessTokenPayload = {
       userId: user.id,
@@ -223,7 +335,10 @@ export class AuthService {
       loggedInAs: RoleName.CUSTOMER,
     };
 
-    const tokens = await this.jwtServiceUtils.generateTokenPair(accessPayload, refreshPayload);
+    const tokens = await this.jwtServiceUtils.generateTokenPair(
+      accessPayload,
+      refreshPayload,
+    );
 
     // Delete old tokens and create new
     await this.tokenService.deleteAllByUserId(user.id);
@@ -240,19 +355,24 @@ export class AuthService {
     const decoded = this.jwtServiceUtils.verifyRefreshToken(refreshToken);
     if (!decoded) {
       throw new UnauthorizedException(
-        this.i18nService.translate('errors.AUTH.INVALID_REFRESH_TOKEN'),
+        this.i18nService.translate("errors.AUTH.INVALID_REFRESH_TOKEN"),
       );
     }
 
-    const user = await this.userRepository.findById(decoded.userId, UserIncludePreset.FULL);
-    if (!user || user.status !== 'ACTIVE') {
+    const user = await this.userRepository.findById(
+      decoded.userId,
+      UserIncludePreset.FULL,
+    );
+    if (!user || user.status !== "ACTIVE") {
       throw new UnauthorizedException(
-        this.i18nService.translate('errors.USER.NOT_FOUND'),
+        this.i18nService.translate("errors.USER.NOT_FOUND"),
       );
     }
 
     const userRoles = await this.userRoleService.findAllByUserId(user.id);
-    const roles = userRoles.map((ur) => ur.role?.name).filter(Boolean) as string[];
+    const roles = userRoles
+      .map((ur) => ur.role?.name)
+      .filter(Boolean) as string[];
 
     const accessPayload: AccessTokenPayload = {
       userId: user.id,
@@ -265,7 +385,10 @@ export class AuthService {
       loggedInAs: decoded.loggedInAs,
     };
 
-    const tokens = await this.jwtServiceUtils.generateTokenPair(accessPayload, refreshPayload);
+    const tokens = await this.jwtServiceUtils.generateTokenPair(
+      accessPayload,
+      refreshPayload,
+    );
 
     // Update stored tokens
     await this.tokenService.updateByRefreshToken(refreshToken, {

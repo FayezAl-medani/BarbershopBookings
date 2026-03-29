@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { Customer, User } from '@prisma/client';
-import { CustomerEntity } from '../entities/customer.entity.js';
-import { UserMapper } from '../../user/mappers/user.mapper.js';
-import { CustomerResponseDto } from '../dto/response/customer-response.dto.js';
+import { Injectable } from "@nestjs/common";
+import { Customer, User } from "@prisma/client";
+import { CustomerEntity } from "../entities/customer.entity.js";
+import { UserMapper } from "../../user/mappers/user.mapper.js";
+import { CustomerResponseDto } from "../dto/response/customer-response.dto.js";
 
 @Injectable()
 export class CustomerMapper {
@@ -24,7 +24,9 @@ export class CustomerMapper {
       id: entity.id,
       userId: entity.userId,
       notes: entity.notes,
-      user: entity.user ? this.userMapper.entityToResponseDto(entity.user) : undefined,
+      user: entity.user
+        ? this.userMapper.entityToResponseDto(entity.user)
+        : undefined,
     };
   }
 }

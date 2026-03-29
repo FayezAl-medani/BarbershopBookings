@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { type IPagingMeta, PagingMeta } from './paging-meta.dto.js';
-import { ResponseStatus } from '../enums/index.js';
+import { ApiProperty } from "@nestjs/swagger";
+import { type IPagingMeta, PagingMeta } from "./paging-meta.dto.js";
+import { ResponseStatus } from "../enums/index.js";
 
 export interface IPaginatedResult<T> {
   data: T[];
@@ -11,19 +11,19 @@ export class PagingDataResponseDto<T> implements IPaginatedResult<T> {
   @ApiProperty({
     enum: ResponseStatus,
     example: ResponseStatus.SUCCESS,
-    description: 'Response status indicator',
+    description: "Response status indicator",
   })
   status: ResponseStatus;
 
   @ApiProperty({
     isArray: true,
-    description: 'Array of data items',
+    description: "Array of data items",
   })
   data: T[];
 
   @ApiProperty({
     type: () => PagingMeta,
-    description: 'Pagination metadata',
+    description: "Pagination metadata",
   })
   meta: PagingMeta;
 
@@ -50,7 +50,7 @@ export function createPagingDataResponse<T>(
     declare data: T[];
   }
 
-  Object.defineProperty(PagingDataResponse, 'name', {
+  Object.defineProperty(PagingDataResponse, "name", {
     value: `${dataType.name}PagingData`,
     writable: false,
   });

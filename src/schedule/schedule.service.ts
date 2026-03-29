@@ -1,13 +1,21 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { I18nService } from 'nestjs-i18n';
-import { IScheduleService } from './schedule.service.interface.js';
-import { ScheduleRepository } from './schedule.repository.js';
-import { ScheduleMapper } from './mappers/schedule.mapper.js';
-import { ScheduleEntity } from './entities/schedule.entity.js';
-import { ScheduleCreateDto } from './dto/request/schedule-create.dto.js';
-import { ScheduleFilterDto } from './dto/request/schedule-filter.dto.js';
-import { SchedulePatchDto } from './dto/request/schedule-patch.dto.js';
-import { MessageResponseDto, SuccessResponseDto } from '../common/dto/status.dto.js';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
+import { I18nService } from "nestjs-i18n";
+import { IScheduleService } from "./schedule.service.interface.js";
+import { ScheduleRepository } from "./schedule.repository.js";
+import { ScheduleMapper } from "./mappers/schedule.mapper.js";
+import { ScheduleEntity } from "./entities/schedule.entity.js";
+import { ScheduleCreateDto } from "./dto/request/schedule-create.dto.js";
+import { ScheduleFilterDto } from "./dto/request/schedule-filter.dto.js";
+import { SchedulePatchDto } from "./dto/request/schedule-patch.dto.js";
+import {
+  MessageResponseDto,
+  SuccessResponseDto,
+} from "../common/dto/status.dto.js";
 
 @Injectable()
 export class ScheduleService implements IScheduleService {
@@ -20,7 +28,7 @@ export class ScheduleService implements IScheduleService {
   async create(payload: ScheduleCreateDto): Promise<ScheduleEntity> {
     if (payload.startTime >= payload.endTime) {
       throw new BadRequestException(
-        this.i18nService.translate('errors.SCHEDULE.INVALID_TIME'),
+        this.i18nService.translate("errors.SCHEDULE.INVALID_TIME"),
       );
     }
 
@@ -30,7 +38,7 @@ export class ScheduleService implements IScheduleService {
     );
     if (existing) {
       throw new ConflictException(
-        this.i18nService.translate('errors.SCHEDULE.ALREADY_EXISTS'),
+        this.i18nService.translate("errors.SCHEDULE.ALREADY_EXISTS"),
       );
     }
 
@@ -52,7 +60,7 @@ export class ScheduleService implements IScheduleService {
     const schedule = await this.scheduleRepository.findById(id);
     if (!schedule) {
       throw new NotFoundException(
-        this.i18nService.translate('errors.SCHEDULE.NOT_FOUND'),
+        this.i18nService.translate("errors.SCHEDULE.NOT_FOUND"),
       );
     }
     return this.scheduleMapper.modelToEntity(schedule);
@@ -65,7 +73,7 @@ export class ScheduleService implements IScheduleService {
     const endTime = payload.endTime || existing.endTime;
     if (startTime >= endTime) {
       throw new BadRequestException(
-        this.i18nService.translate('errors.SCHEDULE.INVALID_TIME'),
+        this.i18nService.translate("errors.SCHEDULE.INVALID_TIME"),
       );
     }
 
@@ -77,7 +85,7 @@ export class ScheduleService implements IScheduleService {
     await this.getById(id);
     await this.scheduleRepository.deleteById(id);
     return new SuccessResponseDto(
-      this.i18nService.translate('messages.SCHEDULE.DELETED'),
+      this.i18nService.translate("messages.SCHEDULE.DELETED"),
     );
   }
 }

@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class BookingResponseDto {
   @ApiProperty()
@@ -24,6 +24,15 @@ export class BookingResponseDto {
 
   @ApiProperty()
   status: string;
+
+  @ApiProperty()
+  totalPrice: number;
+
+  @ApiProperty()
+  paymentStatus: string;
+
+  @ApiProperty()
+  paymentMethod: string;
 
   @ApiPropertyOptional()
   notes?: string | null;

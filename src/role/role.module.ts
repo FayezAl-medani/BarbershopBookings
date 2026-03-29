@@ -1,9 +1,9 @@
-import { Module } from '@nestjs/common';
-import { RoleController } from './role.controller.js';
-import { RoleService } from './role.service.js';
-import { RoleRepository } from './role.repository.js';
-import { RoleMapper } from './mappers/role.mapper.js';
-import { ROLE_SERVICE } from './role.service.interface.js';
+import { Module } from "@nestjs/common";
+import { RoleController } from "./role.controller.js";
+import { RoleService } from "./role.service.js";
+import { RoleRepository } from "./role.repository.js";
+import { RoleMapper } from "./mappers/role.mapper.js";
+import { ROLE_SERVICE } from "./role.service.interface.js";
 
 @Module({
   controllers: [RoleController],

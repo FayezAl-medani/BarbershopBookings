@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { UserCredential } from '@prisma/client';
-import { PrismaService } from '../common/prisma/prisma.service.js';
-import { PrismaTransactionContext } from '../common/prisma/prisma-transaction-context.service.js';
-import { UserCredentialCreateDto } from './dto/request/user-credential-create.dto.js';
+import { Injectable } from "@nestjs/common";
+import { UserCredential } from "@prisma/client";
+import { PrismaService } from "../common/prisma/prisma.service.js";
+import { PrismaTransactionContext } from "../common/prisma/prisma-transaction-context.service.js";
+import { UserCredentialCreateDto } from "./dto/request/user-credential-create.dto.js";
 
 @Injectable()
 export class UserCredentialRepository {
@@ -21,14 +21,25 @@ export class UserCredentialRepository {
     return await client.userCredential.findFirst({ where: { userId } });
   }
 
-  async findByUserIdAndMethod(userId: string, method: string): Promise<UserCredential | null> {
+  async findByUserIdAndMethod(
+    userId: string,
+    method: string,
+  ): Promise<UserCredential | null> {
     const client = this.txContext.getClient();
-    return await client.userCredential.findFirst({ where: { userId, method: method as any } });
+    return await client.userCredential.findFirst({
+      where: { userId, method: method as any },
+    });
   }
 
-  async updateById(id: string, data: Partial<UserCredentialCreateDto>): Promise<UserCredential> {
+  async updateById(
+    id: string,
+    data: Partial<UserCredentialCreateDto>,
+  ): Promise<UserCredential> {
     const client = this.txContext.getClient();
-    return await client.userCredential.update({ where: { id }, data: data as any });
+    return await client.userCredential.update({
+      where: { id },
+      data: data as any,
+    });
   }
 
   async deleteById(id: string): Promise<void> {

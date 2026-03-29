@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { Token } from '@prisma/client';
-import { TokenEntity } from '../entities/token.entity.js';
+import { Injectable } from "@nestjs/common";
+import { Token } from "@prisma/client";
+import { TokenEntity } from "../entities/token.entity.js";
 
 @Injectable()
 export class TokenMapper {

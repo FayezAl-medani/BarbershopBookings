@@ -1,17 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { I18nService } from 'nestjs-i18n';
-import { IBarberService } from './barber.service.interface.js';
-import { BarberRepository } from './barber.repository.js';
-import { BarberMapper } from './mappers/barber.mapper.js';
-import { BarberEntity } from './entities/barber.entity.js';
-import { BarberCreateDto } from './dto/request/barber-create.dto.js';
-import { BarberFilterDto } from './dto/request/barber-filter.dto.js';
-import { BarberPatchDto } from './dto/request/barber-patch.dto.js';
-import { PaginationParams } from '../common/dto/pagination-params.dto.js';
-import { SortingParam } from '../common/decorators/sorting-params.decorator.js';
-import { IPaginatedResult } from '../common/dto/paging-data-response.dto.js';
-import { PagingDataResponseDto } from '../common/dto/paging-data-response.dto.js';
-import { MessageResponseDto, SuccessResponseDto } from '../common/dto/status.dto.js';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { I18nService } from "nestjs-i18n";
+import { IBarberService } from "./barber.service.interface.js";
+import { BarberRepository } from "./barber.repository.js";
+import { BarberMapper } from "./mappers/barber.mapper.js";
+import { BarberEntity } from "./entities/barber.entity.js";
+import { BarberCreateDto } from "./dto/request/barber-create.dto.js";
+import { BarberFilterDto } from "./dto/request/barber-filter.dto.js";
+import { BarberPatchDto } from "./dto/request/barber-patch.dto.js";
+import { PaginationParams } from "../common/dto/pagination-params.dto.js";
+import { SortingParam } from "../common/decorators/sorting-params.decorator.js";
+import { IPaginatedResult } from "../common/dto/paging-data-response.dto.js";
+import { PagingDataResponseDto } from "../common/dto/paging-data-response.dto.js";
+import {
+  MessageResponseDto,
+  SuccessResponseDto,
+} from "../common/dto/status.dto.js";
 
 @Injectable()
 export class BarberService implements IBarberService {
@@ -31,7 +34,11 @@ export class BarberService implements IBarberService {
     pagingArgs?: PaginationParams,
     sort?: SortingParam | null,
   ): Promise<IPaginatedResult<BarberEntity>> {
-    const result = await this.barberRepository.findAllPaging(filter, pagingArgs, sort);
+    const result = await this.barberRepository.findAllPaging(
+      filter,
+      pagingArgs,
+      sort,
+    );
     const data = result.data.map((res) => this.barberMapper.modelToEntity(res));
     return new PagingDataResponseDto(data, result.meta);
   }
@@ -40,7 +47,7 @@ export class BarberService implements IBarberService {
     const barber = await this.barberRepository.findById(id);
     if (!barber) {
       throw new NotFoundException(
-        this.i18nService.translate('errors.BARBER.NOT_FOUND'),
+        this.i18nService.translate("errors.BARBER.NOT_FOUND"),
       );
     }
     return this.barberMapper.modelToEntity(barber);
@@ -50,7 +57,7 @@ export class BarberService implements IBarberService {
     const barber = await this.barberRepository.findByUserId(userId);
     if (!barber) {
       throw new NotFoundException(
-        this.i18nService.translate('errors.BARBER.NOT_FOUND'),
+        this.i18nService.translate("errors.BARBER.NOT_FOUND"),
       );
     }
     return this.barberMapper.modelToEntity(barber);
@@ -66,7 +73,7 @@ export class BarberService implements IBarberService {
     await this.getById(id);
     await this.barberRepository.deleteById(id);
     return new SuccessResponseDto(
-      this.i18nService.translate('messages.BARBER.DELETED'),
+      this.i18nService.translate("messages.BARBER.DELETED"),
     );
   }
 }

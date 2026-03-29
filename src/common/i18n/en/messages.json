@@ -10,6 +10,11 @@
     "LOGOUT_SUCCESS": "Logged out successfully",
     "TOKEN_REFRESHED": "Token refreshed successfully"
   },
+  "BARBERSHOP": {
+    "CREATED": "Barbershop created successfully",
+    "UPDATED": "Barbershop updated successfully",
+    "DELETED": "Barbershop deleted successfully"
+  },
   "BOOKING": {
     "CREATED": "Booking created successfully",
     "UPDATED": "Booking updated successfully",
@@ -30,5 +35,21 @@
     "CREATED": "Schedule created successfully",
     "UPDATED": "Schedule updated successfully",
     "DELETED": "Schedule deleted successfully"
+  },
+  "REVIEW": {
+    "CREATED": "Review submitted successfully",
+    "DELETED": "Review deleted successfully"
+  },
+  "COMMISSION": {
+    "COLLECTED": "Commission collected successfully"
+  },
+  "NOTIFICATION": {
+    "READ": "Notification marked as read",
+    "ALL_READ": "All notifications marked as read",
+    "DELETED": "Notification deleted successfully"
+  },
+  "UPLOAD": {
+    "SUCCESS": "File uploaded successfully",
+    "DELETED": "File deleted successfully"
   }
 }

@@ -10,6 +10,12 @@
     "NOT_FOUND": "Admin not found",
     "ALREADY_EXISTS": "Admin already exists"
   },
+  "BARBERSHOP": {
+    "NOT_FOUND": "Barbershop not found",
+    "ALREADY_EXISTS": "Barbershop already exists",
+    "NOT_ACTIVE": "Barbershop is not active",
+    "ACCESS_DENIED": "You do not have access to this barbershop"
+  },
   "BARBER": {
     "NOT_FOUND": "Barber not found",
     "ALREADY_EXISTS": "Barber already exists",
@@ -37,6 +43,27 @@
     "OUTSIDE_WORKING_HOURS": "Booking time is outside barber working hours",
     "CANNOT_CANCEL": "This booking cannot be cancelled",
     "BARBER_DOES_NOT_OFFER_SERVICE": "This barber does not offer the selected service"
+  },
+  "REVIEW": {
+    "NOT_FOUND": "Review not found",
+    "ALREADY_EXISTS": "You have already reviewed this booking",
+    "BOOKING_NOT_COMPLETED": "You can only review completed bookings",
+    "NOT_YOUR_BOOKING": "You can only review your own bookings"
+  },
+  "COMMISSION": {
+    "NOT_FOUND": "Commission not found",
+    "ALREADY_COLLECTED": "Commission has already been collected",
+    "NO_COMMISSION_RATE": "Barber does not have a commission rate set"
+  },
+  "NOTIFICATION": {
+    "NOT_FOUND": "Notification not found",
+    "ACCESS_DENIED": "You do not have access to this notification"
+  },
+  "UPLOAD": {
+    "FILE_TOO_LARGE": "File is too large",
+    "INVALID_FILE_TYPE": "Invalid file type",
+    "UPLOAD_FAILED": "File upload failed",
+    "NOT_FOUND": "Image not found"
   },
   "AUTH": {
     "INVALID_CREDENTIALS": "Invalid credentials",

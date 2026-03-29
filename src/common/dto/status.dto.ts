@@ -1,11 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { ResponseStatus } from '../enums/index.js';
+import { ApiProperty } from "@nestjs/swagger";
+import { ResponseStatus } from "../enums/index.js";
 
 export class StatusDTO {
   @ApiProperty({
     enum: ResponseStatus,
     example: ResponseStatus.ERROR,
-    description: 'Response status indicator',
+    description: "Response status indicator",
   })
   status: ResponseStatus;
 
@@ -16,7 +16,7 @@ export class StatusDTO {
 
 export class MessageResponseDto extends StatusDTO {
   @ApiProperty({
-    description: 'Human-readable message describing the operation result',
+    description: "Human-readable message describing the operation result",
   })
   message: string;
 

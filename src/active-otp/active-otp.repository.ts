@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { ActiveOtp } from '@prisma/client';
-import { PrismaService } from '../common/prisma/prisma.service.js';
-import { PrismaTransactionContext } from '../common/prisma/prisma-transaction-context.service.js';
-import { ActiveOtpCreateDto } from './dto/request/active-otp-create.dto.js';
+import { Injectable } from "@nestjs/common";
+import { ActiveOtp } from "@prisma/client";
+import { PrismaService } from "../common/prisma/prisma.service.js";
+import { PrismaTransactionContext } from "../common/prisma/prisma-transaction-context.service.js";
+import { ActiveOtpCreateDto } from "./dto/request/active-otp-create.dto.js";
 
 @Injectable()
 export class ActiveOtpRepository {
@@ -20,11 +20,14 @@ export class ActiveOtpRepository {
     const client = this.txContext.getClient();
     return await client.activeOtp.findFirst({
       where: { identifier },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
-  async updateById(id: string, data: Partial<ActiveOtpCreateDto>): Promise<ActiveOtp> {
+  async updateById(
+    id: string,
+    data: Partial<ActiveOtpCreateDto>,
+  ): Promise<ActiveOtp> {
     const client = this.txContext.getClient();
     return await client.activeOtp.update({ where: { id }, data: data as any });
   }

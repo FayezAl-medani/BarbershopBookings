@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { UserRole, Role } from '@prisma/client';
-import { UserRoleEntity } from '../entities/user-role.entity.js';
-import { RoleMapper } from '../../role/mappers/role.mapper.js';
+import { Injectable } from "@nestjs/common";
+import { UserRole, Role } from "@prisma/client";
+import { UserRoleEntity } from "../entities/user-role.entity.js";
+import { RoleMapper } from "../../role/mappers/role.mapper.js";
 
 @Injectable()
 export class UserRoleMapper {

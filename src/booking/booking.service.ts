@@ -4,28 +4,36 @@ import {
   Inject,
   Injectable,
   NotFoundException,
-} from '@nestjs/common';
-import { I18nService } from 'nestjs-i18n';
-import { IBookingService } from './booking.service.interface.js';
-import { BookingRepository } from './booking.repository.js';
-import { BookingMapper } from './mappers/booking.mapper.js';
-import { BookingEntity } from './entities/booking.entity.js';
-import { BookingCreateDto } from './dto/request/booking-create.dto.js';
-import { BookingFilterDto } from './dto/request/booking-filter.dto.js';
-import { BookingPatchDto } from './dto/request/booking-patch.dto.js';
-import { AvailabilityResponseDto, TimeSlotDto } from './dto/response/availability-response.dto.js';
-import { PaginationParams } from '../common/dto/pagination-params.dto.js';
-import { SortingParam } from '../common/decorators/sorting-params.decorator.js';
-import { IPaginatedResult } from '../common/dto/paging-data-response.dto.js';
-import { PagingDataResponseDto } from '../common/dto/paging-data-response.dto.js';
-import { MessageResponseDto, SuccessResponseDto } from '../common/dto/status.dto.js';
-import { BookingStatus } from './enums/booking-status.enum.js';
-import { BARBER_SERVICE_SERVICE } from '../barber-service/barber-service.service.interface.js';
-import type { IBarberServiceService } from '../barber-service/barber-service.service.interface.js';
-import { SERVICE_SERVICE } from '../service/service.service.interface.js';
-import type { IServiceService } from '../service/service.service.interface.js';
-import { SCHEDULE_SERVICE } from '../schedule/schedule.service.interface.js';
-import type { IScheduleService } from '../schedule/schedule.service.interface.js';
+} from "@nestjs/common";
+import { I18nService } from "nestjs-i18n";
+import { IBookingService } from "./booking.service.interface.js";
+import { BookingRepository } from "./booking.repository.js";
+import { BookingMapper } from "./mappers/booking.mapper.js";
+import { BookingEntity } from "./entities/booking.entity.js";
+import { BookingCreateDto } from "./dto/request/booking-create.dto.js";
+import { BookingFilterDto } from "./dto/request/booking-filter.dto.js";
+import { BookingPatchDto } from "./dto/request/booking-patch.dto.js";
+import {
+  AvailabilityResponseDto,
+  TimeSlotDto,
+} from "./dto/response/availability-response.dto.js";
+import { PaginationParams } from "../common/dto/pagination-params.dto.js";
+import { SortingParam } from "../common/decorators/sorting-params.decorator.js";
+import { IPaginatedResult } from "../common/dto/paging-data-response.dto.js";
+import { PagingDataResponseDto } from "../common/dto/paging-data-response.dto.js";
+import {
+  MessageResponseDto,
+  SuccessResponseDto,
+} from "../common/dto/status.dto.js";
+import { BookingStatus } from "./enums/booking-status.enum.js";
+import { BARBER_SERVICE_SERVICE } from "../barber-service/barber-service.service.interface.js";
+import type { IBarberServiceService } from "../barber-service/barber-service.service.interface.js";
+import { SERVICE_SERVICE } from "../service/service.service.interface.js";
+import type { IServiceService } from "../service/service.service.interface.js";
+import { SCHEDULE_SERVICE } from "../schedule/schedule.service.interface.js";
+import type { IScheduleService } from "../schedule/schedule.service.interface.js";
+import { COMMISSION_SERVICE } from "../commission/commission.service.interface.js";
+import type { ICommissionService } from "../commission/commission.service.interface.js";
 
 @Injectable()
 export class BookingService implements IBookingService {
@@ -39,9 +47,15 @@ export class BookingService implements IBookingService {
     private readonly serviceService: IServiceService,
     @Inject(SCHEDULE_SERVICE)
     private readonly scheduleService: IScheduleService,
+    @Inject(COMMISSION_SERVICE)
+    private readonly commissionService: ICommissionService,
   ) {}
 
   async create(payload: BookingCreateDto): Promise<BookingEntity> {
+    if (!payload.customerId) {
+      throw new BadRequestException("Customer ID is required");
+    }
+
     // 1. Verify the barber offers this service
     const offersService = await this.barberServiceService.barberOffersService(
       payload.barberId,
@@ -49,11 +63,13 @@ export class BookingService implements IBookingService {
     );
     if (!offersService) {
       throw new BadRequestException(
-        this.i18nService.translate('errors.BOOKING.BARBER_DOES_NOT_OFFER_SERVICE'),
+        this.i18nService.translate(
+          "errors.BOOKING.BARBER_DOES_NOT_OFFER_SERVICE",
+        ),
       );
     }
 
-    // 2. Get service duration to calculate end time
+    // 2. Get service duration and price to calculate end time and snapshot price
     const service = await this.serviceService.getById(payload.serviceId);
     const endTime = this.addMinutesToTime(payload.startTime, service.duration);
 
@@ -69,14 +85,14 @@ export class BookingService implements IBookingService {
 
     if (schedules.length === 0) {
       throw new BadRequestException(
-        this.i18nService.translate('errors.BOOKING.OUTSIDE_WORKING_HOURS'),
+        this.i18nService.translate("errors.BOOKING.OUTSIDE_WORKING_HOURS"),
       );
     }
 
     const schedule = schedules[0];
     if (payload.startTime < schedule.startTime || endTime > schedule.endTime) {
       throw new BadRequestException(
-        this.i18nService.translate('errors.BOOKING.OUTSIDE_WORKING_HOURS'),
+        this.i18nService.translate("errors.BOOKING.OUTSIDE_WORKING_HOURS"),
       );
     }
 
@@ -90,19 +106,22 @@ export class BookingService implements IBookingService {
 
     if (overlapping.length > 0) {
       throw new ConflictException(
-        this.i18nService.translate('errors.BOOKING.DOUBLE_BOOKING'),
+        this.i18nService.translate("errors.BOOKING.DOUBLE_BOOKING"),
       );
     }
 
-    // 5. Create the booking
+    // 5. Create the booking with price snapshot
     const booking = await this.bookingRepository.create({
-      customerId: payload.customerId,
+      customerId: payload.customerId!,
       barberId: payload.barberId,
       serviceId: payload.serviceId,
       date: bookingDate,
       startTime: payload.startTime,
       endTime,
       status: BookingStatus.CONFIRMED,
+      totalPrice: service.price,
+      paymentStatus: "UNPAID",
+      paymentMethod: "CASH",
       notes: payload.notes,
     });
 
@@ -114,8 +133,14 @@ export class BookingService implements IBookingService {
     pagingArgs?: PaginationParams,
     sort?: SortingParam | null,
   ): Promise<IPaginatedResult<BookingEntity>> {
-    const result = await this.bookingRepository.findAllPaging(filter, pagingArgs, sort);
-    const data = result.data.map((res) => this.bookingMapper.modelToEntity(res));
+    const result = await this.bookingRepository.findAllPaging(
+      filter,
+      pagingArgs,
+      sort,
+    );
+    const data = result.data.map((res) =>
+      this.bookingMapper.modelToEntity(res),
+    );
     return new PagingDataResponseDto(data, result.meta);
   }
 
@@ -123,7 +148,7 @@ export class BookingService implements IBookingService {
     const booking = await this.bookingRepository.findById(id);
     if (!booking) {
       throw new NotFoundException(
-        this.i18nService.translate('errors.BOOKING.NOT_FOUND'),
+        this.i18nService.translate("errors.BOOKING.NOT_FOUND"),
       );
     }
     return this.bookingMapper.modelToEntity(booking);
@@ -138,29 +163,48 @@ export class BookingService implements IBookingService {
   async cancel(id: string): Promise<MessageResponseDto> {
     const booking = await this.getById(id);
 
-    if (booking.status === BookingStatus.CANCELLED) {
+    if (
+      booking.status === BookingStatus.CANCELLED ||
+      booking.status === BookingStatus.COMPLETED ||
+      booking.status === BookingStatus.NO_SHOW
+    ) {
       throw new BadRequestException(
-        this.i18nService.translate('errors.BOOKING.CANNOT_CANCEL'),
+        this.i18nService.translate("errors.BOOKING.CANNOT_CANCEL"),
       );
     }
 
-    if (booking.status === BookingStatus.COMPLETED) {
-      throw new BadRequestException(
-        this.i18nService.translate('errors.BOOKING.CANNOT_CANCEL'),
-      );
-    }
-
-    await this.bookingRepository.updateById(id, { status: BookingStatus.CANCELLED });
+    await this.bookingRepository.updateById(id, {
+      status: BookingStatus.CANCELLED,
+    });
     return new SuccessResponseDto(
-      this.i18nService.translate('messages.BOOKING.CANCELLED'),
+      this.i18nService.translate("messages.BOOKING.CANCELLED"),
     );
   }
 
   async complete(id: string): Promise<BookingEntity> {
-    await this.getById(id);
+    const booking = await this.getById(id);
+
+    if (
+      booking.status === BookingStatus.COMPLETED ||
+      booking.status === BookingStatus.CANCELLED ||
+      booking.status === BookingStatus.NO_SHOW
+    ) {
+      throw new BadRequestException(
+        `Cannot complete a booking with status ${booking.status}`,
+      );
+    }
+
     const updated = await this.bookingRepository.updateById(id, {
       status: BookingStatus.COMPLETED,
     });
+
+    // Trigger commission creation (ignore errors if no commission rate)
+    try {
+      await this.commissionService.createFromBooking(id);
+    } catch {
+      // Commission creation is optional - barber may not have a rate set
+    }
+
     return this.bookingMapper.modelToEntity(updated);
   }
 
@@ -190,10 +234,11 @@ export class BookingService implements IBookingService {
     const schedule = schedules[0];
 
     // 3. Get existing bookings for the day
-    const existingBookings = await this.bookingRepository.findBarberBookingsForDate(
-      barberId,
-      bookingDate,
-    );
+    const existingBookings =
+      await this.bookingRepository.findBarberBookingsForDate(
+        barberId,
+        bookingDate,
+      );
 
     // 4. Generate available time slots
     const availableSlots: TimeSlotDto[] = [];
@@ -207,7 +252,8 @@ export class BookingService implements IBookingService {
 
       // Check if this slot overlaps with any existing booking
       const isOverlapping = existingBookings.some(
-        (booking) => currentTime < booking.endTime && slotEnd > booking.startTime,
+        (booking) =>
+          currentTime < booking.endTime && slotEnd > booking.startTime,
       );
 
       if (!isOverlapping) {
@@ -224,15 +270,23 @@ export class BookingService implements IBookingService {
   // ─── Helper Methods ───────────────────────────────────
 
   private addMinutesToTime(time: string, minutes: number): string {
-    const [hours, mins] = time.split(':').map(Number);
+    const [hours, mins] = time.split(":").map(Number);
     const totalMinutes = hours * 60 + mins + minutes;
     const newHours = Math.floor(totalMinutes / 60);
     const newMins = totalMinutes % 60;
-    return `${String(newHours).padStart(2, '0')}:${String(newMins).padStart(2, '0')}`;
+    return `${String(newHours).padStart(2, "0")}:${String(newMins).padStart(2, "0")}`;
   }
 
   private getDayOfWeek(date: Date): string {
-    const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+    const days = [
+      "SUNDAY",
+      "MONDAY",
+      "TUESDAY",
+      "WEDNESDAY",
+      "THURSDAY",
+      "FRIDAY",
+      "SATURDAY",
+    ];
     return days[date.getUTCDay()];
   }
 }

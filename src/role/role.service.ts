@@ -1,10 +1,14 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { I18nService } from 'nestjs-i18n';
-import { IRoleService } from './role.service.interface.js';
-import { RoleRepository } from './role.repository.js';
-import { RoleMapper } from './mappers/role.mapper.js';
-import { RoleEntity } from './entities/role.entity.js';
-import { RoleCreateDto } from './dto/request/role-create.dto.js';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
+import { I18nService } from "nestjs-i18n";
+import { IRoleService } from "./role.service.interface.js";
+import { RoleRepository } from "./role.repository.js";
+import { RoleMapper } from "./mappers/role.mapper.js";
+import { RoleEntity } from "./entities/role.entity.js";
+import { RoleCreateDto } from "./dto/request/role-create.dto.js";
 
 @Injectable()
 export class RoleService implements IRoleService {
@@ -18,7 +22,7 @@ export class RoleService implements IRoleService {
     const exists = await this.roleRepository.existsByName(payload.name);
     if (exists) {
       throw new ConflictException(
-        this.i18nService.translate('errors.ROLE.ALREADY_EXISTS'),
+        this.i18nService.translate("errors.ROLE.ALREADY_EXISTS"),
       );
     }
     const role = await this.roleRepository.create(payload);
@@ -29,7 +33,7 @@ export class RoleService implements IRoleService {
     const role = await this.roleRepository.findById(id);
     if (!role) {
       throw new NotFoundException(
-        this.i18nService.translate('errors.ROLE.NOT_FOUND'),
+        this.i18nService.translate("errors.ROLE.NOT_FOUND"),
       );
     }
     return this.roleMapper.modelToEntity(role);
@@ -39,7 +43,7 @@ export class RoleService implements IRoleService {
     const role = await this.roleRepository.findByName(name);
     if (!role) {
       throw new NotFoundException(
-        this.i18nService.translate('errors.ROLE.NOT_FOUND'),
+        this.i18nService.translate("errors.ROLE.NOT_FOUND"),
       );
     }
     return this.roleMapper.modelToEntity(role);

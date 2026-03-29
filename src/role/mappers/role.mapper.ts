@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { Role } from '@prisma/client';
-import { RoleEntity } from '../entities/role.entity.js';
-import { RoleResponseDto } from '../dto/response/role-response.dto.js';
+import { Injectable } from "@nestjs/common";
+import { Role } from "@prisma/client";
+import { RoleEntity } from "../entities/role.entity.js";
+import { RoleResponseDto } from "../dto/response/role-response.dto.js";
 
 @Injectable()
 export class RoleMapper {

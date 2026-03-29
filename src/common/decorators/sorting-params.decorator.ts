@@ -2,8 +2,8 @@ import {
   ExecutionContext,
   NotAcceptableException,
   createParamDecorator,
-} from '@nestjs/common';
-import { Request } from 'express';
+} from "@nestjs/common";
+import { Request } from "express";
 
 export type SortingParam = {
   property: string;
@@ -16,16 +16,16 @@ export const SortingParams = createParamDecorator(
     const sort = req.query.sort as string;
     if (!sort) return null;
 
-    if (typeof validParams != 'object')
-      throw new NotAcceptableException('Invalid sort parameter');
+    if (typeof validParams != "object")
+      throw new NotAcceptableException("Invalid sort parameter");
 
     const sortPattern = /^([a-zA-Z0-9]+):(asc|desc)$/;
     if (!sort.match(sortPattern))
       throw new NotAcceptableException(
-        'Invalid sort parameter, allowed(asc|desc)',
+        "Invalid sort parameter, allowed(asc|desc)",
       );
 
-    const [property, direction] = sort.split(':');
+    const [property, direction] = sort.split(":");
     if (!validParams.includes(property))
       throw new NotAcceptableException(
         `Invalid sort property: ${property}, allowed: [${validParams}]`,

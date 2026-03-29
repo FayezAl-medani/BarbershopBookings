@@ -1,14 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import { Barber, Prisma } from '@prisma/client';
-import { PrismaService } from '../common/prisma/prisma.service.js';
-import { PrismaTransactionContext } from '../common/prisma/prisma-transaction-context.service.js';
-import { paginator } from '../common/prisma/paginator.js';
-import { BarberCreateDto } from './dto/request/barber-create.dto.js';
-import { BarberFilterDto } from './dto/request/barber-filter.dto.js';
-import { BarberPatchDto } from './dto/request/barber-patch.dto.js';
-import { PaginationParams } from '../common/dto/pagination-params.dto.js';
-import { IPaginatedResult } from '../common/dto/paging-data-response.dto.js';
-import { SortingParam } from '../common/decorators/sorting-params.decorator.js';
+import { Injectable } from "@nestjs/common";
+import { Barber, Prisma } from "@prisma/client";
+import { PrismaService } from "../common/prisma/prisma.service.js";
+import { PrismaTransactionContext } from "../common/prisma/prisma-transaction-context.service.js";
+import { paginator } from "../common/prisma/paginator.js";
+import { BarberCreateDto } from "./dto/request/barber-create.dto.js";
+import { BarberFilterDto } from "./dto/request/barber-filter.dto.js";
+import { BarberPatchDto } from "./dto/request/barber-patch.dto.js";
+import { PaginationParams } from "../common/dto/pagination-params.dto.js";
+import { IPaginatedResult } from "../common/dto/paging-data-response.dto.js";
+import { SortingParam } from "../common/decorators/sorting-params.decorator.js";
 
 const paginate = paginator({ perPage: 10 });
 
@@ -31,7 +31,11 @@ export class BarberRepository {
     const client = this.txContext.getClient();
     return await client.barber.findUnique({
       where: { id },
-      include: { user: true, barberServices: { include: { service: true } }, schedules: true },
+      include: {
+        user: true,
+        barberServices: { include: { service: true } },
+        schedules: true,
+      },
     });
   }
 
@@ -48,18 +52,24 @@ export class BarberRepository {
     pagingArgs?: PaginationParams,
     sort?: SortingParam | null,
   ): Promise<IPaginatedResult<Barber>> {
-    const { id, userId, specialization, isActive } = filter;
+    const { id, userId, barbershopId, specialization, isActive } = filter;
 
     const where: Prisma.BarberWhereInput = {
       ...(id && { id }),
       ...(userId && { userId }),
-      ...(specialization && { specialization: { contains: specialization, mode: 'insensitive' as const } }),
+      ...(barbershopId && { barbershopId }),
+      ...(specialization && {
+        specialization: {
+          contains: specialization,
+          mode: "insensitive" as const,
+        },
+      }),
       ...(isActive !== undefined && { isActive }),
     };
 
     const orderBy = sort
       ? { [sort.property]: sort.direction }
-      : { createdAt: 'desc' as const };
+      : { createdAt: "desc" as const };
 
     return paginate(
       this.txContext.getClient().barber,

@@ -1,14 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import { Service, Prisma } from '@prisma/client';
-import { PrismaService } from '../common/prisma/prisma.service.js';
-import { PrismaTransactionContext } from '../common/prisma/prisma-transaction-context.service.js';
-import { paginator } from '../common/prisma/paginator.js';
-import { ServiceCreateDto } from './dto/request/service-create.dto.js';
-import { ServiceFilterDto } from './dto/request/service-filter.dto.js';
-import { ServicePatchDto } from './dto/request/service-patch.dto.js';
-import { PaginationParams } from '../common/dto/pagination-params.dto.js';
-import { IPaginatedResult } from '../common/dto/paging-data-response.dto.js';
-import { SortingParam } from '../common/decorators/sorting-params.decorator.js';
+import { Injectable } from "@nestjs/common";
+import { Service, Prisma } from "@prisma/client";
+import { PrismaService } from "../common/prisma/prisma.service.js";
+import { PrismaTransactionContext } from "../common/prisma/prisma-transaction-context.service.js";
+import { paginator } from "../common/prisma/paginator.js";
+import { ServiceCreateDto } from "./dto/request/service-create.dto.js";
+import { ServiceFilterDto } from "./dto/request/service-filter.dto.js";
+import { ServicePatchDto } from "./dto/request/service-patch.dto.js";
+import { PaginationParams } from "../common/dto/pagination-params.dto.js";
+import { IPaginatedResult } from "../common/dto/paging-data-response.dto.js";
+import { SortingParam } from "../common/decorators/sorting-params.decorator.js";
 
 const paginate = paginator({ perPage: 10 });
 
@@ -34,17 +34,18 @@ export class ServiceRepository {
     pagingArgs?: PaginationParams,
     sort?: SortingParam | null,
   ): Promise<IPaginatedResult<Service>> {
-    const { id, name, isActive } = filter;
+    const { id, barbershopId, name, isActive } = filter;
 
     const where: Prisma.ServiceWhereInput = {
       ...(id && { id }),
-      ...(name && { name: { contains: name, mode: 'insensitive' as const } }),
+      ...(barbershopId && { barbershopId }),
+      ...(name && { name: { contains: name, mode: "insensitive" as const } }),
       ...(isActive !== undefined && { isActive }),
     };
 
     const orderBy = sort
       ? { [sort.property]: sort.direction }
-      : { createdAt: 'desc' as const };
+      : { createdAt: "desc" as const };
 
     return paginate(
       this.txContext.getClient().service,

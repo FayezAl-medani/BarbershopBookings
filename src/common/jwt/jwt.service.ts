@@ -1,17 +1,18 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
+import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { JwtService } from "@nestjs/jwt";
 import {
   JwtDecodedEntity,
   JwtRefreshPayloadWithAuth,
-} from '../entities/index.js';
-import { RoleName } from '../enums/index.js';
+} from "../entities/index.js";
+import { RoleName } from "../enums/index.js";
 
 export interface AccessTokenPayload {
   userId: string;
   adminId?: string;
   barberId?: string;
   customerId?: string;
+  barbershopId?: string;
   loggedInAs: RoleName;
   roles: string[];
 }
@@ -30,16 +31,16 @@ export class JwtServiceUtils {
 
   async generateAccessToken(payload: AccessTokenPayload): Promise<string> {
     const accessToken = await this.jwtService.signAsync(payload, {
-      secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-      expiresIn: this.configService.get('JWT_ACCESS_EXPIRE'),
+      secret: this.configService.get<string>("JWT_ACCESS_SECRET"),
+      expiresIn: this.configService.get("JWT_ACCESS_EXPIRE"),
     });
     return accessToken;
   }
 
   async generateRefreshToken(payload: RefreshTokenPayload): Promise<string> {
     const refreshToken = await this.jwtService.signAsync(payload, {
-      secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-      expiresIn: this.configService.get('JWT_REFRESH_EXPIRE'),
+      secret: this.configService.get<string>("JWT_REFRESH_SECRET"),
+      expiresIn: this.configService.get("JWT_REFRESH_EXPIRE"),
     });
     return refreshToken;
   }
@@ -48,11 +49,11 @@ export class JwtServiceUtils {
     if (!token) return null;
     try {
       const decoded = this.jwtService.verify(token, {
-        secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
+        secret: this.configService.get<string>("JWT_ACCESS_SECRET"),
       });
       if (!decoded) return null;
       return { userId: decoded.userId };
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -61,14 +62,14 @@ export class JwtServiceUtils {
     if (!token) return null;
     try {
       const decoded = this.jwtService.verify(token, {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        secret: this.configService.get<string>("JWT_REFRESH_SECRET"),
       });
       if (!decoded) return null;
       return {
         userId: decoded.userId,
         loggedInAs: decoded.loggedInAs,
       };
-    } catch (error) {
+    } catch {
       return null;
     }
   }

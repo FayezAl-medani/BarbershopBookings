@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { BarberService } from '@prisma/client';
-import { PrismaService } from '../common/prisma/prisma.service.js';
-import { PrismaTransactionContext } from '../common/prisma/prisma-transaction-context.service.js';
+import { Injectable } from "@nestjs/common";
+import { BarberService } from "@prisma/client";
+import { PrismaService } from "../common/prisma/prisma.service.js";
+import { PrismaTransactionContext } from "../common/prisma/prisma-transaction-context.service.js";
 
 @Injectable()
 export class BarberServiceRepository {

@@ -1,17 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { I18nService } from 'nestjs-i18n';
-import { IServiceService } from './service.service.interface.js';
-import { ServiceRepository } from './service.repository.js';
-import { ServiceMapper } from './mappers/service.mapper.js';
-import { ServiceEntity } from './entities/service.entity.js';
-import { ServiceCreateDto } from './dto/request/service-create.dto.js';
-import { ServiceFilterDto } from './dto/request/service-filter.dto.js';
-import { ServicePatchDto } from './dto/request/service-patch.dto.js';
-import { PaginationParams } from '../common/dto/pagination-params.dto.js';
-import { SortingParam } from '../common/decorators/sorting-params.decorator.js';
-import { IPaginatedResult } from '../common/dto/paging-data-response.dto.js';
-import { PagingDataResponseDto } from '../common/dto/paging-data-response.dto.js';
-import { MessageResponseDto, SuccessResponseDto } from '../common/dto/status.dto.js';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { I18nService } from "nestjs-i18n";
+import { IServiceService } from "./service.service.interface.js";
+import { ServiceRepository } from "./service.repository.js";
+import { ServiceMapper } from "./mappers/service.mapper.js";
+import { ServiceEntity } from "./entities/service.entity.js";
+import { ServiceCreateDto } from "./dto/request/service-create.dto.js";
+import { ServiceFilterDto } from "./dto/request/service-filter.dto.js";
+import { ServicePatchDto } from "./dto/request/service-patch.dto.js";
+import { PaginationParams } from "../common/dto/pagination-params.dto.js";
+import { SortingParam } from "../common/decorators/sorting-params.decorator.js";
+import { IPaginatedResult } from "../common/dto/paging-data-response.dto.js";
+import { PagingDataResponseDto } from "../common/dto/paging-data-response.dto.js";
+import {
+  MessageResponseDto,
+  SuccessResponseDto,
+} from "../common/dto/status.dto.js";
 
 @Injectable()
 export class ServiceService implements IServiceService {
@@ -31,8 +34,14 @@ export class ServiceService implements IServiceService {
     pagingArgs?: PaginationParams,
     sort?: SortingParam | null,
   ): Promise<IPaginatedResult<ServiceEntity>> {
-    const result = await this.serviceRepository.findAllPaging(filter, pagingArgs, sort);
-    const data = result.data.map((res) => this.serviceMapper.modelToEntity(res));
+    const result = await this.serviceRepository.findAllPaging(
+      filter,
+      pagingArgs,
+      sort,
+    );
+    const data = result.data.map((res) =>
+      this.serviceMapper.modelToEntity(res),
+    );
     return new PagingDataResponseDto(data, result.meta);
   }
 
@@ -40,7 +49,7 @@ export class ServiceService implements IServiceService {
     const service = await this.serviceRepository.findById(id);
     if (!service) {
       throw new NotFoundException(
-        this.i18nService.translate('errors.SERVICE.NOT_FOUND'),
+        this.i18nService.translate("errors.SERVICE.NOT_FOUND"),
       );
     }
     return this.serviceMapper.modelToEntity(service);
@@ -56,7 +65,7 @@ export class ServiceService implements IServiceService {
     await this.getById(id);
     await this.serviceRepository.deleteById(id);
     return new SuccessResponseDto(
-      this.i18nService.translate('messages.SERVICE.DELETED'),
+      this.i18nService.translate("messages.SERVICE.DELETED"),
     );
   }
 }

@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { Role } from '@prisma/client';
-import { PrismaService } from '../common/prisma/prisma.service.js';
-import { PrismaTransactionContext } from '../common/prisma/prisma-transaction-context.service.js';
-import { RoleCreateDto } from './dto/request/role-create.dto.js';
+import { Injectable } from "@nestjs/common";
+import { Role } from "@prisma/client";
+import { PrismaService } from "../common/prisma/prisma.service.js";
+import { PrismaTransactionContext } from "../common/prisma/prisma-transaction-context.service.js";
+import { RoleCreateDto } from "./dto/request/role-create.dto.js";
 
 @Injectable()
 export class RoleRepository {
@@ -28,7 +28,7 @@ export class RoleRepository {
 
   async findAll(): Promise<Role[]> {
     const client = this.txContext.getClient();
-    return await client.role.findMany({ orderBy: { name: 'asc' } });
+    return await client.role.findMany({ orderBy: { name: "asc" } });
   }
 
   async exists(id: string): Promise<boolean> {

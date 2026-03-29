@@ -1,15 +1,10 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { BookingStatus } from '../../enums/booking-status.enum.js';
+import { ApiPropertyOptional } from "@nestjs/swagger";
+import { IsOptional, IsString, MaxLength } from "class-validator";
 
 export class BookingPatchDto {
-  @ApiPropertyOptional({ enum: BookingStatus })
-  @IsOptional()
-  @IsEnum(BookingStatus)
-  status?: BookingStatus;
-
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   notes?: string;
 }

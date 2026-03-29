@@ -1,12 +1,12 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString } from 'class-validator';
+import { ApiProperty } from "@nestjs/swagger";
+import { IsEmail, IsUUID } from "class-validator";
 
 export class AdminCreateDto {
   @ApiProperty()
-  @IsString()
+  @IsUUID()
   userId: string;
 
-  @ApiProperty({ example: 'admin@barbershop.com' })
+  @ApiProperty({ example: "admin@barbershop.com" })
   @IsEmail()
   email: string;
 }

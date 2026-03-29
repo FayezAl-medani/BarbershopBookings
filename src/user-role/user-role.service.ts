@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { IUserRoleService } from './user-role.service.interface.js';
-import { UserRoleRepository } from './user-role.repository.js';
-import { UserRoleMapper } from './mappers/user-role.mapper.js';
-import { UserRoleEntity } from './entities/user-role.entity.js';
-import { UserRoleCreateDto } from './dto/request/user-role-create.dto.js';
+import { Injectable } from "@nestjs/common";
+import { IUserRoleService } from "./user-role.service.interface.js";
+import { UserRoleRepository } from "./user-role.repository.js";
+import { UserRoleMapper } from "./mappers/user-role.mapper.js";
+import { UserRoleEntity } from "./entities/user-role.entity.js";
+import { UserRoleCreateDto } from "./dto/request/user-role-create.dto.js";
 
 @Injectable()
 export class UserRoleService implements IUserRoleService {
@@ -22,7 +22,10 @@ export class UserRoleService implements IUserRoleService {
     return userRoles.map((ur) => this.userRoleMapper.modelToEntity(ur));
   }
 
-  async existByUserIdAndRoleId(userId: string, roleId: string): Promise<boolean> {
+  async existByUserIdAndRoleId(
+    userId: string,
+    roleId: string,
+  ): Promise<boolean> {
     return this.userRoleRepository.existByUserIdAndRoleId(userId, roleId);
   }
 }

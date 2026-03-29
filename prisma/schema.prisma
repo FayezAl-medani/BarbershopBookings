@@ -42,6 +42,70 @@ enum UserCredentials {
   PASSWORD
 }
 
+enum PaymentStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+  REFUNDED
+  FAILED
+}
+
+enum PaymentMethod {
+  CASH
+  VISA
+  MASTERCARD
+  MADA
+  APPLE_PAY
+  BANK_TRANSFER
+}
+
+enum PaymentType {
+  DEPOSIT
+  FULL
+  REFUND
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum CommissionStatus {
+  PENDING
+  COLLECTED
+}
+
+enum BillingModel {
+  COMMISSION
+  SUBSCRIPTION
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PAST_DUE
+}
+
+enum SalaryType {
+  FIXED
+  HOURLY
+  PER_SERVICE
+}
+
+enum NotificationType {
+  BOOKING_CREATED
+  BOOKING_CONFIRMED
+  BOOKING_CANCELLED
+  BOOKING_COMPLETED
+  BOOKING_REMINDER
+  REVIEW_RECEIVED
+  COMMISSION_COLLECTED
+  GENERAL
+}
+
 // ─── Models ──────────────────────────────────────────────
 
 model User {
@@ -51,17 +115,21 @@ model User {
   phoneNumber String     @unique @map("phone_number")
   email       String?    @unique @map("email")
   status      UserStatus @default(ACTIVE) @map("status")
+  fcmToken    String?    @map("fcm_token")
   lastLoginAt DateTime?  @map("last_login_at") @db.Timestamptz()
   createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz()
 
   // Relations
-  admin           Admin?
-  barber          Barber?
-  customer        Customer?
-  userCredentials UserCredential[]
-  tokens          Token[]
-  userRoles       UserRole[]
+  admin              Admin?
+  barber             Barber?
+  customer           Customer?
+  userCredentials    UserCredential[]
+  tokens             Token[]
+  userRoles          UserRole[]
+  ownedBarbershops   Barbershop[]       @relation("BarbershopOwner")
+  notifications      Notification[]
+  collectedCommissions Commission[]     @relation("CommissionCollector")
 
   @@map("users")
 }
@@ -79,21 +147,69 @@ model Admin {
   @@map("admins")
 }
 
+model Barbershop {
+  id            String   @id @default(uuid(7)) @db.Uuid
+  name          String   @map("name")
+  description   String?  @map("description")
+  address       String   @map("address")
+  city          String   @map("city")
+  latitude      Decimal  @map("latitude") @db.Decimal(10, 7)
+  longitude     Decimal  @map("longitude") @db.Decimal(10, 7)
+  coverImageUrl String?  @map("cover_image_url")
+  phone         String   @map("phone")
+  isActive      Boolean      @default(true) @map("is_active")
+  billingModel  BillingModel @default(COMMISSION) @map("billing_model")
+  ownerId       String       @map("owner_id") @db.Uuid
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime     @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  owner         User              @relation("BarbershopOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  images        BarbershopImage[]
+  barbers       Barber[]
+  services      Service[]
+  reviews       Review[]
+  subscriptions Subscription[]
+
+  @@map("barbershops")
+}
+
+model BarbershopImage {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  barbershopId String   @map("barbershop_id") @db.Uuid
+  imageUrl     String   @map("image_url")
+  displayOrder Int      @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  barbershop Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+
+  @@map("barbershop_images")
+}
+
 model Barber {
   id             String   @id @default(uuid(7)) @db.Uuid
   userId         String   @unique @map("user_id") @db.Uuid
+  barbershopId   String   @map("barbershop_id") @db.Uuid
   bio            String?  @map("bio")
   specialization String?  @map("specialization")
+  commissionRate Decimal? @map("commission_rate") @db.Decimal(5, 4)
   isActive       Boolean  @default(true) @map("is_active")
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz()
 
   // Relations
   user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  barbershop     Barbershop      @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
   barberServices BarberService[]
   schedules      Schedule[]
   bookings       Booking[]
+  reviews        Review[]
+  commissions    Commission[]
+  salaries       Salary[]
 
+  @@index([barbershopId])
   @@map("barbers")
 }
 
@@ -107,24 +223,28 @@ model Customer {
   // Relations
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   bookings Booking[]
+  reviews  Review[]
 
   @@map("customers")
 }
 
 model Service {
-  id          String   @id @default(uuid(7)) @db.Uuid
-  name        String   @map("name")
-  description String?  @map("description")
-  duration    Int      @map("duration") // duration in minutes
-  price       Decimal  @map("price") @db.Decimal(10, 2)
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+  id           String   @id @default(uuid(7)) @db.Uuid
+  barbershopId String   @map("barbershop_id") @db.Uuid
+  name         String   @map("name")
+  description  String?  @map("description")
+  duration     Int      @map("duration") // duration in minutes
+  price        Decimal  @map("price") @db.Decimal(10, 2)
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz()
 
   // Relations
+  barbershop     Barbershop      @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
   barberServices BarberService[]
   bookings       Booking[]
 
+  @@index([barbershopId])
   @@map("services")
 }
 
@@ -138,6 +258,7 @@ model BarberService {
   service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 
   @@id([barberId, serviceId])
+  @@index([serviceId])
   @@map("barber_services")
 }
 
@@ -159,24 +280,101 @@ model Schedule {
 }
 
 model Booking {
-  id         String        @id @default(uuid(7)) @db.Uuid
-  customerId String        @map("customer_id") @db.Uuid
-  barberId   String        @map("barber_id") @db.Uuid
-  serviceId  String        @map("service_id") @db.Uuid
-  date       DateTime      @map("date") @db.Date
-  startTime  String        @map("start_time") // HH:mm format
-  endTime    String        @map("end_time")   // HH:mm format
-  status     BookingStatus @default(PENDING) @map("status")
-  notes      String?       @map("notes")
-  createdAt  DateTime      @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt  DateTime      @updatedAt @map("updated_at") @db.Timestamptz()
+  id            String        @id @default(uuid(7)) @db.Uuid
+  customerId    String        @map("customer_id") @db.Uuid
+  barberId      String        @map("barber_id") @db.Uuid
+  serviceId     String        @map("service_id") @db.Uuid
+  date          DateTime      @map("date") @db.Date
+  startTime     String        @map("start_time") // HH:mm format
+  endTime       String        @map("end_time")   // HH:mm format
+  status        BookingStatus @default(PENDING) @map("status")
+  totalPrice    Decimal       @default(0) @map("total_price") @db.Decimal(10, 2)
+  paymentStatus   PaymentStatus @default(UNPAID) @map("payment_status")
+  paymentMethod   PaymentMethod @default(CASH) @map("payment_method")
+  depositRequired Boolean       @default(false) @map("deposit_required")
+  depositAmount   Decimal       @default(0) @map("deposit_amount") @db.Decimal(10, 2)
+  depositPaid     Boolean       @default(false) @map("deposit_paid")
+  notes           String?       @map("notes")
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt       DateTime      @updatedAt @map("updated_at") @db.Timestamptz()
 
   // Relations
-  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  barber   Barber   @relation(fields: [barberId], references: [id], onDelete: Cascade)
-  service  Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  customer     Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  barber       Barber        @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  service      Service       @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  review       Review?
+  commission   Commission?
+  transactions Payment[]
 
+  @@index([barberId, date])
+  @@index([barberId, date, status])
+  @@index([customerId])
+  @@index([status])
+  @@index([date])
   @@map("bookings")
+}
+
+model Review {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  customerId   String   @map("customer_id") @db.Uuid
+  barbershopId String   @map("barbershop_id") @db.Uuid
+  barberId     String?  @map("barber_id") @db.Uuid
+  bookingId    String   @unique @map("booking_id") @db.Uuid
+  rating       Int      @map("rating") // 1-5
+  comment      String?  @map("comment")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  customer   Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  barbershop Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  barber     Barber?    @relation(fields: [barberId], references: [id], onDelete: SetNull)
+  booking    Booking    @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([barbershopId])
+  @@index([barberId])
+  @@index([customerId])
+  @@map("reviews")
+}
+
+model Commission {
+  id             String           @id @default(uuid(7)) @db.Uuid
+  barberId       String           @map("barber_id") @db.Uuid
+  bookingId      String           @unique @map("booking_id") @db.Uuid
+  amount         Decimal          @map("amount") @db.Decimal(10, 2)
+  commissionRate Decimal          @map("commission_rate") @db.Decimal(5, 4)
+  status         CommissionStatus @default(PENDING) @map("status")
+  collectedAt    DateTime?        @map("collected_at") @db.Timestamptz()
+  collectedById  String?          @map("collected_by_id") @db.Uuid
+  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt      DateTime         @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  barber      Barber  @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  booking     Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  collectedBy User?   @relation("CommissionCollector", fields: [collectedById], references: [id], onDelete: SetNull)
+
+  @@index([barberId])
+  @@index([status])
+  @@map("commissions")
+}
+
+model Notification {
+  id        String           @id @default(uuid(7)) @db.Uuid
+  userId    String           @map("user_id") @db.Uuid
+  title     String           @map("title")
+  body      String           @map("body")
+  type      NotificationType @map("type")
+  isRead    Boolean          @default(false) @map("is_read")
+  data      Json?            @map("data")
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime         @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
 }
 
 model Role {
@@ -218,6 +416,9 @@ model UserCredential {
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+  @@index([userId, method])
+  @@index([identifier])
   @@map("user_credentials")
 }
 
@@ -232,6 +433,9 @@ model Token {
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+  @@index([accessToken])
+  @@index([refreshToken])
   @@map("tokens")
 }
 
@@ -246,5 +450,72 @@ model ActiveOtp {
   createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamptz()
 
+  @@index([identifier, identifierType])
   @@map("active_otps")
+}
+
+// ─── New Models ────────────────────────────────────────
+
+model Payment {
+  id            String            @id @default(uuid(7)) @db.Uuid
+  bookingId     String            @map("booking_id") @db.Uuid
+  amount        Decimal           @map("amount") @db.Decimal(10, 2)
+  type          PaymentType       @map("type")
+  method        PaymentMethod     @map("method")
+  status        TransactionStatus @default(PENDING) @map("status")
+  gatewayRef    String?           @map("gateway_ref")
+  failureReason String?           @map("failure_reason")
+  createdAt     DateTime          @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime          @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([status])
+  @@map("payments")
+}
+
+model Salary {
+  id          String     @id @default(uuid(7)) @db.Uuid
+  barberId    String     @map("barber_id") @db.Uuid
+  type        SalaryType @map("type")
+  amount      Decimal    @map("amount") @db.Decimal(10, 2)
+  currency    String     @default("SAR") @map("currency")
+  periodStart DateTime   @map("period_start") @db.Date
+  periodEnd   DateTime   @map("period_end") @db.Date
+  paidAt      DateTime?  @map("paid_at") @db.Timestamptz()
+  isPaid      Boolean    @default(false) @map("is_paid")
+  notes       String?    @map("notes")
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  barber Barber @relation(fields: [barberId], references: [id], onDelete: Cascade)
+
+  @@index([barberId])
+  @@index([isPaid])
+  @@map("salaries")
+}
+
+model Subscription {
+  id           String             @id @default(uuid(7)) @db.Uuid
+  barbershopId String             @map("barbershop_id") @db.Uuid
+  planName     String             @map("plan_name")
+  amount       Decimal            @map("amount") @db.Decimal(10, 2)
+  currency     String             @default("SAR") @map("currency")
+  status       SubscriptionStatus @default(ACTIVE) @map("status")
+  startDate    DateTime           @map("start_date") @db.Date
+  endDate      DateTime           @map("end_date") @db.Date
+  autoRenew    Boolean            @default(true) @map("auto_renew")
+  notes        String?            @map("notes")
+  createdAt    DateTime           @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt    DateTime           @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  barbershop Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+
+  @@index([barbershopId])
+  @@index([status])
+  @@map("subscriptions")
 }

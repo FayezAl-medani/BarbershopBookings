@@ -1,10 +1,5 @@
-import { Type, plainToInstance } from 'class-transformer';
-import {
-  IsNumber,
-  IsOptional,
-  IsString,
-  validateSync,
-} from 'class-validator';
+import { Type, plainToInstance } from "class-transformer";
+import { IsNumber, IsOptional, IsString, validateSync } from "class-validator";
 
 export class EnvironmentVariables {
   @IsString() @IsOptional() APP_NAME?: string;

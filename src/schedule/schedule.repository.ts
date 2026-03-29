@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { Schedule, Prisma } from '@prisma/client';
-import { PrismaService } from '../common/prisma/prisma.service.js';
-import { PrismaTransactionContext } from '../common/prisma/prisma-transaction-context.service.js';
-import { ScheduleCreateDto } from './dto/request/schedule-create.dto.js';
-import { ScheduleFilterDto } from './dto/request/schedule-filter.dto.js';
-import { SchedulePatchDto } from './dto/request/schedule-patch.dto.js';
+import { Injectable } from "@nestjs/common";
+import { Schedule, Prisma } from "@prisma/client";
+import { PrismaService } from "../common/prisma/prisma.service.js";
+import { PrismaTransactionContext } from "../common/prisma/prisma-transaction-context.service.js";
+import { ScheduleCreateDto } from "./dto/request/schedule-create.dto.js";
+import { ScheduleFilterDto } from "./dto/request/schedule-filter.dto.js";
+import { SchedulePatchDto } from "./dto/request/schedule-patch.dto.js";
 
 @Injectable()
 export class ScheduleRepository {
@@ -23,7 +23,10 @@ export class ScheduleRepository {
     return await client.schedule.findUnique({ where: { id } });
   }
 
-  async findByBarberIdAndDay(barberId: string, dayOfWeek: string): Promise<Schedule | null> {
+  async findByBarberIdAndDay(
+    barberId: string,
+    dayOfWeek: string,
+  ): Promise<Schedule | null> {
     const client = this.txContext.getClient();
     return await client.schedule.findUnique({
       where: { barberId_dayOfWeek: { barberId, dayOfWeek: dayOfWeek as any } },
@@ -34,7 +37,7 @@ export class ScheduleRepository {
     const client = this.txContext.getClient();
     return await client.schedule.findMany({
       where: { barberId, isActive: true },
-      orderBy: { dayOfWeek: 'asc' },
+      orderBy: { dayOfWeek: "asc" },
     });
   }
 
@@ -48,7 +51,10 @@ export class ScheduleRepository {
     };
 
     const client = this.txContext.getClient();
-    return await client.schedule.findMany({ where, orderBy: { dayOfWeek: 'asc' } });
+    return await client.schedule.findMany({
+      where,
+      orderBy: { dayOfWeek: "asc" },
+    });
   }
 
   async updateById(id: string, payload: SchedulePatchDto): Promise<Schedule> {

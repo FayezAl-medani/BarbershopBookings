@@ -1,6 +1,6 @@
-import { Global, Module } from '@nestjs/common';
-import { PrismaService } from './prisma.service.js';
-import { PrismaTransactionContext } from './prisma-transaction-context.service.js';
+import { Global, Module } from "@nestjs/common";
+import { PrismaService } from "./prisma.service.js";
+import { PrismaTransactionContext } from "./prisma-transaction-context.service.js";
 
 @Global()
 @Module({

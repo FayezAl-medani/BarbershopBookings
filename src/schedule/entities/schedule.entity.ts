@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
 export class ScheduleEntity {
   @ApiProperty()
@@ -7,13 +7,13 @@ export class ScheduleEntity {
   @ApiProperty()
   barberId: string;
 
-  @ApiProperty({ example: 'MONDAY' })
+  @ApiProperty({ example: "MONDAY" })
   dayOfWeek: string;
 
-  @ApiProperty({ example: '09:00' })
+  @ApiProperty({ example: "09:00" })
   startTime: string;
 
-  @ApiProperty({ example: '17:00' })
+  @ApiProperty({ example: "17:00" })
   endTime: string;
 
   @ApiProperty()

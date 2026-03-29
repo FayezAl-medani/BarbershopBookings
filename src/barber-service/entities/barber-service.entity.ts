@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { ServiceEntity } from '../../service/entities/service.entity.js';
+import { ApiProperty } from "@nestjs/swagger";
+import { ServiceEntity } from "../../service/entities/service.entity.js";
 
 export class BarberServiceEntity {
   @ApiProperty()

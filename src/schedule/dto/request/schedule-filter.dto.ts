@@ -1,7 +1,7 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsOptional, IsUUID } from 'class-validator';
-import { Transform } from 'class-transformer';
-import { DayOfWeek } from './schedule-create.dto.js';
+import { ApiPropertyOptional } from "@nestjs/swagger";
+import { IsBoolean, IsEnum, IsOptional, IsUUID } from "class-validator";
+import { Transform } from "class-transformer";
+import { DayOfWeek } from "./schedule-create.dto.js";
 
 export class ScheduleFilterDto {
   @ApiPropertyOptional()
@@ -16,7 +16,7 @@ export class ScheduleFilterDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @Transform(({ value }) => value === "true" || value === true)
   @IsBoolean()
   isActive?: boolean;
 }

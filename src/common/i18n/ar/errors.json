@@ -6,6 +6,26 @@
     "ALREADY_EXISTS_WITH_EMAIL": "يوجد مستخدم بهذا البريد الإلكتروني بالفعل",
     "DISABLED": "حساب المستخدم معطل"
   },
+  "BARBERSHOP": {
+    "NOT_FOUND": "الصالون غير موجود",
+    "ALREADY_EXISTS": "الصالون موجود بالفعل",
+    "NOT_ACTIVE": "الصالون غير نشط",
+    "ACCESS_DENIED": "ليس لديك صلاحية الوصول لهذا الصالون"
+  },
+  "BARBER": {
+    "NOT_FOUND": "الحلاق غير موجود",
+    "ALREADY_EXISTS": "الحلاق موجود بالفعل",
+    "NOT_ACTIVE": "الحلاق غير نشط"
+  },
+  "CUSTOMER": {
+    "NOT_FOUND": "العميل غير موجود",
+    "ALREADY_EXISTS": "العميل موجود بالفعل"
+  },
+  "SERVICE": {
+    "NOT_FOUND": "الخدمة غير موجودة",
+    "ALREADY_EXISTS": "الخدمة موجودة بالفعل",
+    "NOT_ACTIVE": "الخدمة غير نشطة"
+  },
   "AUTH": {
     "INVALID_CREDENTIALS": "بيانات الدخول غير صحيحة",
     "INVALID_OTP": "رمز التحقق غير صالح أو منتهي الصلاحية",
@@ -14,6 +34,30 @@
   "BOOKING": {
     "NOT_FOUND": "الحجز غير موجود",
     "TIME_SLOT_UNAVAILABLE": "الموعد المطلوب غير متاح",
-    "DOUBLE_BOOKING": "هذا الموعد محجوز بالفعل"
+    "DOUBLE_BOOKING": "هذا الموعد محجوز بالفعل",
+    "OUTSIDE_WORKING_HOURS": "الموعد خارج ساعات العمل",
+    "CANNOT_CANCEL": "لا يمكن إلغاء هذا الحجز",
+    "BARBER_DOES_NOT_OFFER_SERVICE": "هذا الحلاق لا يقدم الخدمة المحددة"
+  },
+  "REVIEW": {
+    "NOT_FOUND": "التقييم غير موجود",
+    "ALREADY_EXISTS": "لقد قمت بتقييم هذا الحجز مسبقاً",
+    "BOOKING_NOT_COMPLETED": "يمكنك تقييم الحجوزات المكتملة فقط",
+    "NOT_YOUR_BOOKING": "يمكنك تقييم حجوزاتك فقط"
+  },
+  "COMMISSION": {
+    "NOT_FOUND": "العمولة غير موجودة",
+    "ALREADY_COLLECTED": "تم تحصيل العمولة بالفعل",
+    "NO_COMMISSION_RATE": "لم يتم تحديد نسبة العمولة للحلاق"
+  },
+  "NOTIFICATION": {
+    "NOT_FOUND": "الإشعار غير موجود",
+    "ACCESS_DENIED": "ليس لديك صلاحية الوصول لهذا الإشعار"
+  },
+  "UPLOAD": {
+    "FILE_TOO_LARGE": "حجم الملف كبير جداً",
+    "INVALID_FILE_TYPE": "نوع الملف غير صالح",
+    "UPLOAD_FAILED": "فشل رفع الملف",
+    "NOT_FOUND": "الصورة غير موجودة"
   }
 }

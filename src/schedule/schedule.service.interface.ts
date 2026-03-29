@@ -1,10 +1,10 @@
-import { ScheduleEntity } from './entities/schedule.entity.js';
-import { ScheduleCreateDto } from './dto/request/schedule-create.dto.js';
-import { ScheduleFilterDto } from './dto/request/schedule-filter.dto.js';
-import { SchedulePatchDto } from './dto/request/schedule-patch.dto.js';
-import { MessageResponseDto } from '../common/dto/status.dto.js';
+import { ScheduleEntity } from "./entities/schedule.entity.js";
+import { ScheduleCreateDto } from "./dto/request/schedule-create.dto.js";
+import { ScheduleFilterDto } from "./dto/request/schedule-filter.dto.js";
+import { SchedulePatchDto } from "./dto/request/schedule-patch.dto.js";
+import { MessageResponseDto } from "../common/dto/status.dto.js";
 
-export const SCHEDULE_SERVICE = 'IScheduleService';
+export const SCHEDULE_SERVICE = "IScheduleService";
 
 export interface IScheduleService {
   create(payload: ScheduleCreateDto): Promise<ScheduleEntity>;

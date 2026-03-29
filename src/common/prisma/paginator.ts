@@ -1,4 +1,4 @@
-import { IPaginatedResult } from '../dto/index.js';
+import { IPaginatedResult } from "../dto/index.js";
 
 export type PaginateOptions = {
   page?: number | string;

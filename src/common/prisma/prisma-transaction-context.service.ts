@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { AsyncLocalStorage } from 'async_hooks';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from './prisma.service.js';
+import { Injectable } from "@nestjs/common";
+import { AsyncLocalStorage } from "async_hooks";
+import { Prisma } from "@prisma/client";
+import { PrismaService } from "./prisma.service.js";
 
 @Injectable()
 export class PrismaTransactionContext {
